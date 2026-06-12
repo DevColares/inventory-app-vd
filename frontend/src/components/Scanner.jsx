@@ -17,7 +17,7 @@ const Scanner = ({ onScan }) => {
 
             html5QrCode.start(
               cameraId, // Use specific camera ID
-              { fps: 15, qrbox: { width: 280, height: 120 }, aspectRatio: 1.77 },
+              { fps: 15, qrbox: { width: 220, height: 80 }, aspectRatio: 1.77 },
               (decodedText) => {
                 onScan(decodedText);
                 html5QrCode.stop();
