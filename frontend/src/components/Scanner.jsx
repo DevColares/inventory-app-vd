@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const Scanner = ({ onScan }) => {
   const [error, setError] = useState(null);
@@ -8,27 +8,25 @@ const Scanner = ({ onScan }) => {
     let html5QrCode = new Html5Qrcode("reader");
 
     html5QrCode.start(
-      { facingMode: { exact: "environment" } },
-      { fps: 10, qrbox: { width: 220, height: 80 }, aspectRatio: 1.77 },
+      { facingMode: "environment" },
+      { 
+        fps: 20, 
+        qrbox: { width: 250, height: 250 }, 
+        aspectRatio: 1.0,
+        formatsToSupport: [ 
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E
+        ]
+      },
       (decodedText) => {
         onScan(decodedText);
         html5QrCode.stop();
       },
       (errorMessage) => { /* Ignore errors */ }
     ).catch((err) => {
-      // If environment fails, try just 'environment' without exact
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 80 }, aspectRatio: 1.77 },
-        (decodedText) => {
-          onScan(decodedText);
-          html5QrCode.stop();
-        },
-        (errorMessage) => { /* Ignore errors */ }
-      ).catch((err2) => {
-        setError(`Erro ao iniciar câmera: ${err2.message || 'Câmera traseira não encontrada'}`);
-        console.error("Critical failure", err2);
-      });
+        setError(`Erro: ${err.message || 'Câmera não iniciada'}`);
     });
 
     return () => {
