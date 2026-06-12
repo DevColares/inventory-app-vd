@@ -40,20 +40,26 @@ export const addSessionItem = async (ean, systemQty, physicalQty) => {
   let product = products[ean] || products[ean.slice(-6, -1)];
   const name = product ? product.name : "Produto Desconhecido";
   
-  const divergence = physicalQty - systemQty;
+  const session = getStorage('inventory_session', []);
+  const existingIdx = session.findIndex(item => item.ean === ean);
+  
+  let finalPhysicalQty = physicalQty;
+  if (existingIdx >= 0) {
+    // Sum new physical quantity to existing one
+    finalPhysicalQty = session[existingIdx].physical_qty + physicalQty;
+  }
+
+  const divergence = finalPhysicalQty - systemQty;
 
   const newItem = {
     ean,
     name,
     system_qty: systemQty,
-    physical_qty: physicalQty,
+    physical_qty: finalPhysicalQty,
     divergence
   };
-
-  const session = getStorage('inventory_session', []);
   
   // Update if exists
-  const existingIdx = session.findIndex(item => item.ean === ean);
   if (existingIdx >= 0) {
     session[existingIdx] = newItem;
   } else {
