@@ -31,7 +31,7 @@ const SessionTable = ({ items }) => {
               return (
                 <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-2 py-4 text-xs font-medium text-slate-900">{item.ean}</td>
-                  <td className="px-2 py-4 text-xs text-slate-600 truncate max-w-[80px]">{item.name}</td>
+                  <td className="px-2 py-4 text-xs text-slate-600 break-words">{item.name}</td>
                   <td className="px-2 py-4 text-xs text-slate-500">{item.system_qty}</td>
                   <td className="px-2 py-4 text-xs text-slate-900 font-medium">{item.physical_qty}</td>
                   <td className={`px-2 py-4 text-xs ${divColor}`}>
