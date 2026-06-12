@@ -8,8 +8,15 @@ const Scanner = ({ onScan }) => {
     // Get cameras to verify capabilities
     Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {
+            // Try to find a back camera
+            let cameraId = devices[0].id;
+            const backCamera = devices.find(d => d.label.toLowerCase().includes('back'));
+            if (backCamera) {
+                cameraId = backCamera.id;
+            }
+
             html5QrCode.start(
-              { facingMode: "environment" },
+              cameraId, // Use specific camera ID
               { fps: 15, qrbox: { width: 280, height: 120 }, aspectRatio: 1.77 },
               (decodedText) => {
                 onScan(decodedText);
@@ -18,16 +25,6 @@ const Scanner = ({ onScan }) => {
               (errorMessage) => { /* Ignore errors */ }
             ).catch((err) => {
               console.error("Failed to start scanner", err);
-              // Fallback to user if environment fails
-              html5QrCode.start(
-                { facingMode: "user" },
-                { fps: 15, qrbox: { width: 280, height: 120 }, aspectRatio: 1.77 },
-                (decodedText) => {
-                  onScan(decodedText);
-                  html5QrCode.stop();
-                },
-                (errorMessage) => {}
-              ).catch(e => console.error("Critical failure", e));
             });
         }
     }).catch(err => {
