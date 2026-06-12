@@ -102,59 +102,55 @@ const InventoryApp = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-2 sm:p-4 py-6">
-      <header className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight text-center sm:text-left">Controle de Inventário</h1>
-        <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 w-full sm:w-auto">
-          <div>
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              className="hidden"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="text-sm bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full sm:w-auto"
-            >
-              Importar
-            </button>
-          </div>
+    <div className="max-w-3xl mx-auto p-4 min-h-screen">
+      <header className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h1 className="text-2xl font-bold text-slate-900">Controle de Inventário</h1>
+        <div className="flex flex-wrap justify-center sm:justify-end items-center gap-3 w-full sm:w-auto">
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="btn-primary btn-blue text-sm"
+          >
+            Importar Excel
+          </button>
           <button 
             onClick={handleExport}
-            className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto"
+            className="btn-primary btn-ghost text-sm text-green-700"
           >
-            <Download size={18} />
-            <span>Exportar</span>
+            Exportar
           </button>
         </div>
       </header>
 
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-        <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row">
+      <div className="card mb-6">
+        <form onSubmit={handleSearch} className="flex flex-col gap-3">
           <input
             type="text"
             value={ean}
             onChange={(e) => setEan(e.target.value)}
             placeholder="Código EAN..."
-            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 border p-3 text-base"
+            className="w-full border-slate-200 rounded-xl p-4 text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
             autoFocus
           />
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button 
               type="submit"
-              className="flex-1 bg-gray-800 text-white px-6 py-3 rounded-md hover:bg-gray-900 transition-colors font-medium"
+              className="btn-primary btn-gray flex-1 text-center"
             >
               Buscar
             </button>
             <button
               type="button"
               onClick={() => setShowScanner(!showScanner)}
-              className="flex items-center justify-center gap-2 bg-blue-100 text-blue-700 px-4 py-3 rounded-md hover:bg-blue-200 transition-colors font-medium"
+              className="btn-primary btn-ghost flex-1 text-center"
             >
-              <Camera size={20} />
-              <span>{showScanner ? 'Fechar' : 'Câmera'}</span>
+              {showScanner ? 'Fechar Câmera' : 'Ler Código'}
             </button>
           </div>
         </form>
