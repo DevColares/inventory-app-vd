@@ -1,32 +1,30 @@
-import React, { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useEffect } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 
 const Scanner = ({ onScan }) => {
-  const scannerRef = useRef(null);
-
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      false
-    );
+    const html5QrCode = new Html5Qrcode("reader");
 
-    scanner.render(
+    html5QrCode.start(
+      { facingMode: "user" }, // Forces front camera
+      { fps: 10, qrbox: 250 },
       (decodedText) => {
         onScan(decodedText);
-        scanner.clear();
+        html5QrCode.stop();
       },
-      (error) => {
-        // Ignore errors to avoid console spam during scanning
+      (errorMessage) => {
+        // console.log(errorMessage);
       }
-    );
+    ).catch((err) => {
+      console.error("Failed to start scanner", err);
+    });
 
     return () => {
-      scanner.clear().catch(error => console.error("Failed to clear scanner", error));
+      html5QrCode.stop().catch(err => console.error("Failed to stop scanner", err));
     };
   }, [onScan]);
 
-  return <div id="reader" className="w-full max-w-sm mx-auto overflow-hidden rounded-lg shadow-md border-2 border-dashed border-gray-300"></div>;
+  return <div id="reader" className="w-full rounded-2xl overflow-hidden shadow-inner bg-slate-900"></div>;
 };
 
 export default Scanner;
