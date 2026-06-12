@@ -3,7 +3,7 @@ import { Camera, Download, AlertCircle } from 'lucide-react';
 import Scanner from './Scanner';
 import ProductInfo from './ProductInfo';
 import SessionTable from './SessionTable';
-import { getProduct, addSessionItem, uploadProductsExcel, exportSessionExcel, getSessionItems } from '../services/api';
+import { getProduct, addSessionItem, uploadProductsExcel, exportSessionExcel, getSessionItems, updateSessionItem } from '../services/api';
 
 const InventoryApp = () => {
   const [ean, setEan] = useState('');
@@ -68,6 +68,17 @@ const InventoryApp = () => {
       setEan('');
     } catch (err) {
       setError('Erro ao registrar item na sessão.');
+    }
+  };
+
+  const handleUpdateItem = async (ean, systemQty, physicalQty) => {
+    try {
+      const result = await updateSessionItem(ean, systemQty, physicalQty);
+      setSessionItems(prev => {
+        return prev.map(item => item.ean === ean ? result : item);
+      });
+    } catch (err) {
+      setError('Erro ao atualizar item.');
     }
   };
 
@@ -186,7 +197,7 @@ const InventoryApp = () => {
         </div>
       )}
 
-      <SessionTable items={sessionItems} />
+      <SessionTable items={sessionItems} onUpdate={handleUpdateItem} />
       
       <ProductInfo 
         product={currentProduct} 

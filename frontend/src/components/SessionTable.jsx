@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SessionTable = ({ items }) => {
+const SessionTable = ({ items, onUpdate }) => {
   if (items.length === 0) {
     return (
       <div className="text-center p-6 bg-white rounded-lg shadow-md mt-6">
@@ -8,6 +8,12 @@ const SessionTable = ({ items }) => {
       </div>
     );
   }
+
+  const handleQtyChange = (item, field, value) => {
+    const numValue = parseInt(value, 10) || 0;
+    const updatedItem = { ...item, [field]: numValue };
+    onUpdate(updatedItem.ean, updatedItem.system_qty, updatedItem.physical_qty);
+  };
 
   return (
     <div className="card overflow-hidden p-0">
@@ -32,8 +38,22 @@ const SessionTable = ({ items }) => {
                 <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-2 py-4 text-xs font-medium text-slate-900">{item.ean}</td>
                   <td className="px-2 py-4 text-xs text-slate-600 break-words">{item.name}</td>
-                  <td className="px-2 py-4 text-xs text-slate-500">{item.system_qty}</td>
-                  <td className="px-2 py-4 text-xs text-slate-900 font-medium">{item.physical_qty}</td>
+                  <td className="px-2 py-4 text-xs text-slate-500">
+                    <input
+                      type="number"
+                      value={item.system_qty}
+                      onChange={(e) => handleQtyChange(item, 'system_qty', e.target.value)}
+                      className="w-16 border-none bg-slate-100 rounded px-1 py-1 focus:ring-1 focus:ring-blue-500 outline-none"
+                    />
+                  </td>
+                  <td className="px-2 py-4 text-xs text-slate-900 font-medium">
+                    <input
+                      type="number"
+                      value={item.physical_qty}
+                      onChange={(e) => handleQtyChange(item, 'physical_qty', e.target.value)}
+                      className="w-16 border-none bg-slate-100 rounded px-1 py-1 focus:ring-1 focus:ring-blue-500 outline-none"
+                    />
+                  </td>
                   <td className={`px-2 py-4 text-xs ${divColor}`}>
                     {item.divergence > 0 ? `+${item.divergence}` : item.divergence}
                   </td>

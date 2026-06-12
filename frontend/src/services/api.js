@@ -64,6 +64,22 @@ export const addSessionItem = async (ean, systemQty, physicalQty) => {
   return newItem;
 };
 
+export const updateSessionItem = async (ean, systemQty, physicalQty) => {
+  const session = getStorage('inventory_session', []);
+  const idx = session.findIndex(item => item.ean === ean);
+  
+  if (idx === -1) return null;
+
+  const item = session[idx];
+  item.system_qty = systemQty;
+  item.physical_qty = physicalQty;
+  item.divergence = physicalQty - systemQty;
+
+  session[idx] = item;
+  setStorage('inventory_session', session);
+  return item;
+};
+
 export const getSessionItems = async () => {
   return getStorage('inventory_session', []);
 };
