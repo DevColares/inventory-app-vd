@@ -44,17 +44,24 @@ export const addSessionItem = async (ean, systemQty, physicalQty) => {
   const existingIdx = session.findIndex(item => item.ean === ean);
   
   let finalPhysicalQty = physicalQty;
+  let finalSystemQty = systemQty;
+
   if (existingIdx >= 0) {
     // Sum new physical quantity to existing one
     finalPhysicalQty = session[existingIdx].physical_qty + physicalQty;
+    
+    // Preserve existing system_qty if the new one is not provided (0 or empty)
+    if (!systemQty && session[existingIdx].system_qty) {
+      finalSystemQty = session[existingIdx].system_qty;
+    }
   }
 
-  const divergence = finalPhysicalQty - systemQty;
+  const divergence = finalPhysicalQty - finalSystemQty;
 
   const newItem = {
     ean,
     name,
-    system_qty: systemQty,
+    system_qty: finalSystemQty,
     physical_qty: finalPhysicalQty,
     divergence
   };
