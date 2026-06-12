@@ -102,10 +102,10 @@ const InventoryApp = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 py-8">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Controle de Inventário</h1>
-        <div className="flex items-center gap-4">
+    <div className="max-w-4xl mx-auto p-2 sm:p-4 py-6">
+      <header className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight text-center sm:text-left">Controle de Inventário</h1>
+        <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 w-full sm:w-auto">
           <div>
             <input
               type="file"
@@ -116,47 +116,47 @@ const InventoryApp = () => {
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-sm bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              className="text-sm bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full sm:w-auto"
             >
-              Importar Excel
+              Importar
             </button>
           </div>
           <button 
             onClick={handleExport}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+            className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 w-full sm:w-auto"
           >
-            <Download size={20} />
-            <span>Exportar Excel</span>
+            <Download size={18} />
+            <span>Exportar</span>
           </button>
         </div>
       </header>
 
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <form onSubmit={handleSearch} className="flex gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={ean}
-              onChange={(e) => setEan(e.target.value)}
-              placeholder="Digite o código de barras (EAN)..."
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 border p-3 text-lg"
-              autoFocus
-            />
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+        <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row">
+          <input
+            type="text"
+            value={ean}
+            onChange={(e) => setEan(e.target.value)}
+            placeholder="Código EAN..."
+            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 border p-3 text-base"
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <button 
+              type="submit"
+              className="flex-1 bg-gray-800 text-white px-6 py-3 rounded-md hover:bg-gray-900 transition-colors font-medium"
+            >
+              Buscar
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowScanner(!showScanner)}
+              className="flex items-center justify-center gap-2 bg-blue-100 text-blue-700 px-4 py-3 rounded-md hover:bg-blue-200 transition-colors font-medium"
+            >
+              <Camera size={20} />
+              <span>{showScanner ? 'Fechar' : 'Câmera'}</span>
+            </button>
           </div>
-          <button 
-            type="submit"
-            className="bg-gray-800 text-white px-6 py-3 rounded-md hover:bg-gray-900 transition-colors font-medium"
-          >
-            Buscar
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowScanner(!showScanner)}
-            className="flex items-center gap-2 bg-blue-100 text-blue-700 px-6 py-3 rounded-md hover:bg-blue-200 transition-colors font-medium"
-          >
-            <Camera size={20} />
-            <span>{showScanner ? 'Cancelar Câmera' : 'Câmera'}</span>
-          </button>
         </form>
       </div>
 
