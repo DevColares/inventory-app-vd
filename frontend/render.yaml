@@ -1,7 +1,7 @@
 ---
 services:
-  - type: static
+  - type: web
     name: inventory-app
     rootDir: frontend
     buildCommand: "npm install && npm run build"
-    publishPath: dist
+    startCommand: "npm start"
