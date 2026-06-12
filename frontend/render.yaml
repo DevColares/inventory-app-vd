@@ -2,6 +2,13 @@
 services:
   - type: web
     name: inventory-app
-    rootDir: frontend
+    env: node
+    rootDir: client
     buildCommand: "npm install && npm run build"
     startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Add other environment variables here, e.g. DATABASE_URL, API_KEY, etc.
+    autoDeploy: true
+    # Render provides the PORT env var automatically; ensure your app uses it.
