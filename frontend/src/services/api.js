@@ -137,7 +137,7 @@ export const exportSessionExcel = async () => {
 
   // Format data for sheet
   const data = session.map(item => ({
-    EAN: item.ean,
+    SKU: item.ean,
     Nome: item.name,
     'Saldo Loja': item.system_qty,
     'Saldo Físico': item.physical_qty,

@@ -15,11 +15,11 @@ const SessionTable = ({ items }) => {
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">EAN</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nome</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase hidden sm:table-cell">Sistema</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Físico</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Div.</th>
+              <th className="px-2 py-3 text-left text-xs font-semibold text-slate-500 uppercase">SKU</th>
+              <th className="px-2 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nome</th>
+              <th className="px-2 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Loja</th>
+              <th className="px-2 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Físico</th>
+              <th className="px-2 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Div.</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-100">
@@ -30,11 +30,11 @@ const SessionTable = ({ items }) => {
               
               return (
                 <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-slate-900">{item.ean}</td>
-                  <td className="px-4 py-4 text-sm text-slate-600 truncate max-w-[120px]">{item.name}</td>
-                  <td className="px-4 py-4 text-sm text-slate-500 hidden sm:table-cell">{item.system_qty}</td>
-                  <td className="px-4 py-4 text-sm text-slate-900 font-medium">{item.physical_qty}</td>
-                  <td className={`px-4 py-4 text-sm ${divColor}`}>
+                  <td className="px-2 py-4 text-xs font-medium text-slate-900">{item.ean}</td>
+                  <td className="px-2 py-4 text-xs text-slate-600 truncate max-w-[80px]">{item.name}</td>
+                  <td className="px-2 py-4 text-xs text-slate-500">{item.system_qty}</td>
+                  <td className="px-2 py-4 text-xs text-slate-900 font-medium">{item.physical_qty}</td>
+                  <td className={`px-2 py-4 text-xs ${divColor}`}>
                     {item.divergence > 0 ? `+${item.divergence}` : item.divergence}
                   </td>
                 </tr>

@@ -134,7 +134,7 @@ const InventoryApp = () => {
             type="text"
             value={ean}
             onChange={(e) => setEan(e.target.value)}
-            placeholder="Código EAN..."
+            placeholder="Código SKU..."
             className="w-full border-slate-200 rounded-xl p-4 text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
             autoFocus
           />
