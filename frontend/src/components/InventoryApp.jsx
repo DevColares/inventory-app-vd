@@ -125,6 +125,17 @@ const InventoryApp = () => {
           >
             Exportar
           </button>
+          <button 
+            onClick={() => {
+              if (confirm('Deseja realmente zerar a lista da sessão?')) {
+                localStorage.removeItem('inventory_session');
+                setSessionItems([]);
+              }
+            }}
+            className="btn-primary btn-ghost text-sm text-red-600"
+          >
+            Zerar Lista
+          </button>
         </div>
       </header>
 
