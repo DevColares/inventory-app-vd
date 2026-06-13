@@ -22,17 +22,12 @@ const SessionTable = ({ items, onUpdate }) => {
         <table className="min-w-full divide-y divide-slate-100 session-table">
           <thead className="bg-slate-50/50">
             <tr>
-              <th style={{ width: '60%' }} className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
-              <th style={{ width: '22%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Físico</th>
-              <th style={{ width: '18%' }} className="px-4 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Div.</th>
+              <th style={{ width: '70%' }} className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
+              <th style={{ width: '30%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Físico</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-50">
             {items.map((item, index) => {
-              let divBg = "bg-slate-100 text-slate-600";
-              if (item.divergence < 0) divBg = "bg-red-100 text-red-700";
-              if (item.divergence > 0) divBg = "bg-emerald-100 text-emerald-700";
-              
               return (
                 <tr key={item.ean + item.timestamp} className={`hover:bg-blue-50/30 transition-colors ${index === 0 ? 'bg-blue-50/20' : ''}`}>
                   <td className="px-4 py-4">
@@ -44,13 +39,8 @@ const SessionTable = ({ items, onUpdate }) => {
                       type="number"
                       value={item.physical_qty}
                       onChange={(e) => handleQtyChange(item, 'physical_qty', e.target.value)}
-                      className="w-12 text-center text-sm font-bold text-slate-900 bg-slate-100 rounded-lg py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-16 text-center text-sm font-bold text-slate-900 bg-slate-100 rounded-lg py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    <span className={`inline-block px-2 py-1 rounded-md text-xs font-bold min-w-[32px] text-center ${divBg}`}>
-                      {item.divergence > 0 ? `+${item.divergence}` : item.divergence}
-                    </span>
                   </td>
                 </tr>
               );
