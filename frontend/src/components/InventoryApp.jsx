@@ -301,13 +301,6 @@ const InventoryApp = () => {
           <h1 className="text-xl font-bold text-slate-900 truncate">{activeSession.name}</h1>
           <p className="text-xs text-slate-500">Contando itens...</p>
         </div>
-        <button 
-          onClick={handleFinish}
-          disabled={isLoading || sessionItems.length === 0}
-          className="btn-primary bg-emerald-600 text-white flex items-center gap-2 shadow-lg shadow-emerald-500/20 py-2 px-4 rounded-2xl disabled:opacity-50"
-        >
-          <Send size={18} /> Finalizar
-        </button>
       </header>
 
       <div className="card mb-6 shadow-xl shadow-slate-200/50 border-0 bg-white/80 backdrop-blur-sm sticky top-4 z-40">
@@ -373,12 +366,20 @@ const InventoryApp = () => {
         onCancel={handleCancelModal}
       />
 
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl flex gap-3">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl flex gap-3 px-2">
         <button 
           onClick={() => exportSessionExcel(activeSession.id)}
-          className="flex-1 bg-white border-2 border-slate-100 p-4 rounded-2xl font-bold text-slate-600 shadow-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
+          disabled={sessionItems.length === 0}
+          className="flex-1 bg-white border-2 border-slate-200 p-4 rounded-2xl font-bold text-slate-600 shadow-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all disabled:opacity-50"
         >
           <Save size={20} /> Excel
+        </button>
+        <button 
+          onClick={handleFinish}
+          disabled={isLoading || sessionItems.length === 0}
+          className="flex-1 bg-emerald-600 text-white p-4 rounded-2xl font-bold shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50"
+        >
+          <Send size={20} /> Sheets
         </button>
       </div>
     </div>
