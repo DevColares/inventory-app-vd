@@ -51,6 +51,17 @@
   /* Ajustes para a tabela de inventário no mobile */
   .session-table-container {
     @apply -mx-3 rounded-none border-x-0 mb-20;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .session-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 
   .session-table th, 
