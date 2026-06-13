@@ -22,10 +22,10 @@ const SessionTable = ({ items, onUpdate }) => {
         <table className="min-w-full divide-y divide-slate-100 session-table">
           <thead className="bg-slate-50/50">
             <tr>
-              <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
-              <th className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Loja</th>
-              <th className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Físico</th>
-              <th className="px-4 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Div.</th>
+              <th style={{ width: '45%' }} className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
+              <th style={{ width: '18%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Loja</th>
+              <th style={{ width: '19%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Físico</th>
+              <th style={{ width: '18%' }} className="px-4 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Div.</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-50">
@@ -37,7 +37,7 @@ const SessionTable = ({ items, onUpdate }) => {
               return (
                 <tr key={item.ean + item.timestamp} className={`hover:bg-blue-50/30 transition-colors ${index === 0 ? 'bg-blue-50/20' : ''}`}>
                   <td className="px-4 py-4">
-                    <span className="block font-bold text-slate-900 text-sm truncate max-w-[150px] product-name-cell">{item.name}</span>
+                    <span className="block font-bold text-slate-900 text-sm truncate product-name-cell">{item.name}</span>
                     <span className="text-[10px] font-mono text-slate-400 uppercase">{item.ean}</span>
                   </td>
                   <td className="px-4 py-4 text-center">

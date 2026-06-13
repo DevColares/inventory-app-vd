@@ -50,27 +50,28 @@
 
   /* Ajustes para a tabela de inventário no mobile */
   .session-table-container {
-    @apply -mx-3 rounded-none border-x-0 mb-20;
+    @apply mb-20;
     width: 100%;
-    max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
   }
 
   .session-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
+    display: table; /* Voltando para table para melhor distribuição de colunas */
+    width: 100%;
+    table-layout: fixed; /* Força o respeito às larguras das colunas */
   }
 
   .session-table th, 
   .session-table td {
     @apply px-1 py-3 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .product-name-cell {
-    @apply max-w-[100px] !important;
+    @apply max-w-full !important;
+    display: block;
   }
 
   .main-container {
