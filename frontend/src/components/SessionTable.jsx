@@ -22,9 +22,8 @@ const SessionTable = ({ items, onUpdate }) => {
         <table className="min-w-full divide-y divide-slate-100 session-table">
           <thead className="bg-slate-50/50">
             <tr>
-              <th style={{ width: '45%' }} className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
-              <th style={{ width: '18%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Loja</th>
-              <th style={{ width: '19%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Físico</th>
+              <th style={{ width: '60%' }} className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
+              <th style={{ width: '22%' }} className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Físico</th>
               <th style={{ width: '18%' }} className="px-4 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Div.</th>
             </tr>
           </thead>
@@ -39,14 +38,6 @@ const SessionTable = ({ items, onUpdate }) => {
                   <td className="px-4 py-4">
                     <span className="block font-bold text-slate-900 text-sm truncate product-name-cell">{item.name}</span>
                     <span className="text-[10px] font-mono text-slate-400 uppercase">{item.ean}</span>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <input
-                      type="number"
-                      value={item.system_qty}
-                      onChange={(e) => handleQtyChange(item, 'system_qty', e.target.value)}
-                      className="w-10 text-center text-sm font-medium text-slate-400 bg-transparent hover:bg-slate-100 rounded-lg py-1 transition-colors outline-none"
-                    />
                   </td>
                   <td className="px-4 py-4 text-center">
                     <input
