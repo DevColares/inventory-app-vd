@@ -215,7 +215,7 @@ const InventoryApp = () => {
                     </div>
                     <button 
                       onClick={(e) => handleDeleteSession(session.id, e)}
-                      className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      className="p-3 text-red-500 sm:text-slate-300 sm:opacity-0 sm:group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                     >
                       <Trash2 size={18} />
                     </button>
