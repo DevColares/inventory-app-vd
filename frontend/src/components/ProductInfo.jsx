@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 const ProductInfo = ({ product, onConfirm, onCancel }) => {
-  const [systemQty, setSystemQty] = useState('');
   const [physicalQty, setPhysicalQty] = useState('');
 
+  // Reset fields whenever product changes
   useEffect(() => {
-    if (product) {
-      setSystemQty('');
-      setPhysicalQty('');
-    }
+    setPhysicalQty('');
   }, [product]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (physicalQty !== '' && systemQty !== '') {
-      onConfirm(parseInt(systemQty, 10), parseInt(physicalQty, 10));
-      setSystemQty('');
-      setPhysicalQty('');
+    if (physicalQty !== '') {
+      // Send empty string for system qty as requested
+      onConfirm('', parseInt(physicalQty, 10));
     }
   };
 
@@ -36,34 +32,18 @@ const ProductInfo = ({ product, onConfirm, onCancel }) => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="systemQty" className="block text-sm font-semibold text-gray-700 mb-2">
-                Saldo Loja (Sistema)
-              </label>
-              <input
-                type="number"
-                id="systemQty"
-                value={systemQty}
-                onChange={(e) => setSystemQty(e.target.value)}
-                className="w-full border-2 border-slate-100 rounded-xl p-3 text-xl font-bold text-center focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
-                placeholder="Digite o saldo"
-                required
-                autoFocus
-                inputMode="numeric"
-              />
-            </div>
-
-            <div>
               <label htmlFor="physicalQty" className="block text-sm font-semibold text-gray-700 mb-2">
-                Saldo Físico (Contado)
+                Quantidade Física (Contada)
               </label>
               <input
                 type="number"
                 id="physicalQty"
                 value={physicalQty}
                 onChange={(e) => setPhysicalQty(e.target.value)}
-                className="w-full border-2 border-slate-100 rounded-xl p-3 text-xl font-bold text-center focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
-                placeholder="Digite a contagem"
+                className="w-full border-2 border-slate-100 rounded-xl p-4 text-3xl font-bold text-center focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                placeholder="0"
                 required
+                autoFocus
                 inputMode="numeric"
               />
             </div>
