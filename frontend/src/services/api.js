@@ -35,67 +35,104 @@ export const getProduct = async (ean) => {
   return product;
 };
 
-export const addSessionItem = async (ean, systemQty, physicalQty) => {
+// --- Session Management ---
+
+export const getSessions = () => {
+  return getStorage('inventory_sessions', []);
+};
+
+export const createSession = (name) => {
+  const sessions = getSessions();
+  const newSession = {
+    id: Date.now().toString(),
+    name: name || `Inventário ${new Date().toLocaleDateString()}`,
+    createdAt: new Date().toISOString(),
+    items: [],
+    status: 'active'
+  };
+  sessions.push(newSession);
+  setStorage('inventory_sessions', sessions);
+  return newSession;
+};
+
+export const deleteSession = (id) => {
+  const sessions = getSessions().filter(s => s.id !== id);
+  setStorage('inventory_sessions', sessions);
+};
+
+export const getSessionItems = async (sessionId) => {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session) return [];
+  // Sort descending by timestamp
+  return [...session.items].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+};
+
+export const addSessionItem = async (sessionId, ean, systemQty, physicalQty) => {
   const products = getStorage('inventory_products', {});
   let product = products[ean] || products[ean.slice(-6, -1)];
   const name = product ? product.name : "Produto Desconhecido";
   
-  const session = getStorage('inventory_session', []);
-  const existingIdx = session.findIndex(item => item.ean === ean);
+  const sessions = getSessions();
+  const sessionIdx = sessions.findIndex(s => s.id === sessionId);
+  if (sessionIdx === -1) throw new Error("Sessão não encontrada");
+
+  const session = sessions[sessionIdx];
+  const existingIdx = session.items.findIndex(item => item.ean === ean);
   
   let finalPhysicalQty = physicalQty;
   let finalSystemQty = systemQty;
 
   if (existingIdx >= 0) {
-    // Sum new physical quantity to existing one
-    finalPhysicalQty = session[existingIdx].physical_qty + physicalQty;
-    
-    // Preserve existing system_qty if the new one is not provided (0 or empty)
-    if (!systemQty && session[existingIdx].system_qty) {
-      finalSystemQty = session[existingIdx].system_qty;
+    finalPhysicalQty = session.items[existingIdx].physical_qty + physicalQty;
+    if (!systemQty && session.items[existingIdx].system_qty) {
+      finalSystemQty = session.items[existingIdx].system_qty;
     }
   }
-
-  const divergence = finalPhysicalQty - finalSystemQty;
 
   const newItem = {
     ean,
     name,
     system_qty: finalSystemQty,
     physical_qty: finalPhysicalQty,
-    divergence
+    divergence: finalPhysicalQty - finalSystemQty,
+    timestamp: Date.now()
   };
   
-  // Update if exists
   if (existingIdx >= 0) {
-    session[existingIdx] = newItem;
+    session.items[existingIdx] = newItem;
   } else {
-    session.push(newItem);
+    session.items.push(newItem);
   }
 
-  setStorage('inventory_session', session);
+  sessions[sessionIdx] = session;
+  setStorage('inventory_sessions', sessions);
   return newItem;
 };
 
-export const updateSessionItem = async (ean, systemQty, physicalQty) => {
-  const session = getStorage('inventory_session', []);
-  const idx = session.findIndex(item => item.ean === ean);
-  
+export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty) => {
+  const sessions = getSessions();
+  const sessionIdx = sessions.findIndex(s => s.id === sessionId);
+  if (sessionIdx === -1) return null;
+
+  const session = sessions[sessionIdx];
+  const idx = session.items.findIndex(item => item.ean === ean);
   if (idx === -1) return null;
 
-  const item = session[idx];
+  const item = session.items[idx];
   item.system_qty = systemQty;
   item.physical_qty = physicalQty;
   item.divergence = physicalQty - systemQty;
+  item.timestamp = Date.now(); // Update timestamp on edit to move to top? 
+  // User asked for "descending order", usually means newest first.
 
-  session[idx] = item;
-  setStorage('inventory_session', session);
+  session.items[idx] = item;
+  sessions[sessionIdx] = session;
+  setStorage('inventory_sessions', sessions);
   return item;
 };
 
-export const getSessionItems = async () => {
-  return getStorage('inventory_session', []);
-};
+// --- Integration ---
 
 export const uploadProductsExcel = async (file) => {
   return new Promise((resolve, reject) => {
@@ -106,16 +143,11 @@ export const uploadProductsExcel = async (file) => {
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        
-        // Convert to JSON
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         
-        if (rows.length < 2) {
-          throw new Error("Planilha vazia ou sem dados.");
-        }
+        if (rows.length < 2) throw new Error("Planilha vazia.");
 
         const headers = rows[0].map(h => String(h).toLowerCase().trim());
-        
         let codIdx = 0, nameIdx = 1, qtyIdx = 2;
         headers.forEach((h, i) => {
           if (h.includes('cod') || h.includes('ean') || h.includes('código')) codIdx = i;
@@ -125,47 +157,35 @@ export const uploadProductsExcel = async (file) => {
 
         const newProducts = {};
         let count = 0;
-
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (!row[codIdx]) continue;
-
           const rawCode = String(row[codIdx]).trim();
           const name = row[nameIdx] ? String(row[nameIdx]) : "Sem Nome";
           const qty = parseInt(row[qtyIdx], 10) || 0;
-
           let internalCode = rawCode;
-          if (rawCode.length >= 12) {
-            internalCode = rawCode.slice(-6, -1);
-          }
-
+          if (rawCode.length >= 12) internalCode = rawCode.slice(-6, -1);
           newProducts[internalCode] = { ean: rawCode, name, system_qty: qty };
-          
-          if (internalCode !== rawCode) {
-            newProducts[rawCode] = newProducts[internalCode];
-          }
+          if (internalCode !== rawCode) newProducts[rawCode] = newProducts[internalCode];
           count++;
         }
-
         setStorage('inventory_products', newProducts);
         resolve({ message: `Sucesso! ${count} produtos carregados.` });
-      } catch (err) {
-        reject(err);
-      }
+      } catch (err) { reject(err); }
     };
     reader.onerror = () => reject(new Error("Falha ao ler o arquivo."));
     reader.readAsArrayBuffer(file);
   });
 };
 
-export const exportSessionExcel = async () => {
-  const session = getStorage('inventory_session', []);
-  if (session.length === 0) {
+export const exportSessionExcel = async (sessionId) => {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session || session.items.length === 0) {
     throw new Error("Sessão vazia. Não há nada para exportar.");
   }
 
-  // Format data for sheet
-  const data = session.map(item => ({
+  const data = session.items.map(item => ({
     SKU: item.ean,
     Nome: item.name,
     'Saldo Loja': item.system_qty,
@@ -175,7 +195,35 @@ export const exportSessionExcel = async () => {
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Sessão de Inventário");
-  
-  XLSX.writeFile(workbook, "inventory_export.xlsx");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Inventário");
+  XLSX.writeFile(workbook, `inventario_${session.name}.xlsx`);
+};
+
+export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session || session.items.length === 0) throw new Error("Sessão vazia.");
+
+  const payload = {
+    sessionName: session.name,
+    date: new Date().toLocaleString(),
+    items: session.items.map(item => ({
+      sku: item.ean,
+      nome: item.name,
+      loja: item.system_qty,
+      fisico: item.physical_qty,
+      divergencia: item.divergence
+    }))
+  };
+
+  const response = await fetch(webAppUrl, {
+    method: 'POST',
+    mode: 'no-cors', // Common for Google Apps Script Web Apps
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  // Since we use no-cors, we can't really see the response body, 
+  // but if it doesn't throw, it's usually fine.
+  return { message: "Dados enviados para o Google Sheets!" };
 };
