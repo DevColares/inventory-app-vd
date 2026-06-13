@@ -166,7 +166,7 @@ const InventoryApp = () => {
       <div className="max-w-xl mx-auto p-4 min-h-screen flex flex-col justify-center relative main-container">
         <button 
           onClick={() => setShowConfig(true)}
-          className="absolute top-4 right-4 p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-blue-600 hover:shadow-lg transition-all"
+          className="absolute top-4 right-4 p-3 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-blue-600 hover:shadow-lg transition-all"
         >
           <Settings size={20} />
         </button>
@@ -179,10 +179,10 @@ const InventoryApp = () => {
         <div className="space-y-4">
           <button 
             onClick={handleCreateSession}
-            className="w-full flex items-center justify-between p-6 bg-blue-600 text-white rounded-3xl shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all group"
+            className="w-full flex items-center justify-between p-6 bg-blue-600 text-white rounded-lg shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-2xl group-hover:scale-110 transition-transform">
+              <div className="p-3 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
                 <Plus size={24} />
               </div>
               <div className="text-left">
@@ -199,7 +199,7 @@ const InventoryApp = () => {
             </h2>
             <div className="space-y-3">
               {sessions.length === 0 ? (
-                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-3xl text-slate-400">
+                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-lg text-slate-400">
                   Nenhum histórico encontrado
                 </div>
               ) : (
@@ -207,7 +207,7 @@ const InventoryApp = () => {
                   <div 
                     key={session.id}
                     onClick={() => setActiveSession(session)}
-                    className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-3xl hover:border-blue-200 hover:shadow-lg transition-all cursor-pointer group"
+                    className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-lg hover:border-blue-200 hover:shadow-lg transition-all cursor-pointer group"
                   >
                     <div>
                       <span className="block font-bold text-slate-800">{session.name}</span>
@@ -215,7 +215,7 @@ const InventoryApp = () => {
                     </div>
                     <button 
                       onClick={(e) => handleDeleteSession(session.id, e)}
-                      className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                      className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -246,7 +246,7 @@ const InventoryApp = () => {
         {/* Config Modal */}
         {showConfig && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden">
               <div className="p-6 border-b border-slate-50 flex items-center justify-between">
                 <h3 className="font-bold text-slate-900 text-lg">Configurações</h3>
                 <button onClick={() => setShowConfig(false)} className="text-slate-400 hover:text-slate-600">
@@ -261,7 +261,7 @@ const InventoryApp = () => {
                     value={googleUrl}
                     onChange={(e) => setGoogleUrl(e.target.value)}
                     placeholder="https://script.google.com/macros/s/..."
-                    className="w-full border-2 border-slate-100 rounded-2xl p-4 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                    className="w-full border-2 border-slate-100 rounded-lg p-4 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
                     required
                   />
                   <p className="text-[10px] text-slate-400 mt-2 px-1">
@@ -270,7 +270,7 @@ const InventoryApp = () => {
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all shadow-lg"
+                  className="w-full bg-slate-900 text-white font-bold py-4 rounded-lg hover:bg-slate-800 transition-all shadow-lg"
                 >
                   Salvar Configurações
                 </button>
@@ -311,20 +311,20 @@ const InventoryApp = () => {
               value={ean}
               onChange={(e) => setEan(e.target.value)}
               placeholder="Código SKU ou EAN..."
-              className="w-full border-2 border-slate-100 rounded-2xl p-5 pr-14 text-lg focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+              className="w-full border-2 border-slate-100 rounded-lg p-5 pr-14 text-lg focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
               autoFocus
             />
             <button
               type="button"
               onClick={() => setShowScanner(!showScanner)}
-              className={`absolute right-3 top-3 p-3 rounded-xl transition-all ${showScanner ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}
+              className={`absolute right-3 top-3 p-3 rounded-lg transition-all ${showScanner ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}
             >
               <Camera size={24} />
             </button>
           </div>
           <button 
             type="submit"
-            className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all active:scale-[0.98]"
+            className="w-full bg-slate-900 text-white font-bold py-4 rounded-lg hover:bg-slate-800 transition-all active:scale-[0.98]"
           >
             Buscar Produto
           </button>
@@ -332,14 +332,14 @@ const InventoryApp = () => {
       </div>
 
       {error && (
-        <div className="flex items-center gap-3 bg-red-50 text-red-700 p-5 rounded-3xl mb-6 border border-red-100 animate-in slide-in-from-top-2">
+        <div className="flex items-center gap-3 bg-red-50 text-red-700 p-5 rounded-lg mb-6 border border-red-100 animate-in slide-in-from-top-2">
           <AlertCircle size={20} className="shrink-0" />
           <p className="text-sm font-medium">{error}</p>
         </div>
       )}
 
       {successMsg && (
-        <div className="flex items-center gap-3 bg-emerald-50 text-emerald-700 p-5 rounded-3xl mb-6 border border-emerald-100 animate-in slide-in-from-top-2">
+        <div className="flex items-center gap-3 bg-emerald-50 text-emerald-700 p-5 rounded-lg mb-6 border border-emerald-100 animate-in slide-in-from-top-2">
           <div className="p-1 bg-emerald-500 text-white rounded-full">
             <Plus size={14} className="rotate-45" />
           </div>
@@ -348,7 +348,7 @@ const InventoryApp = () => {
       )}
 
       {showScanner && (
-        <div className="mb-6 rounded-3xl overflow-hidden shadow-xl border-4 border-white">
+        <div className="mb-6 rounded-lg overflow-hidden shadow-xl border-4 border-white">
           <Scanner onScan={handleScan} />
         </div>
       )}
@@ -370,14 +370,14 @@ const InventoryApp = () => {
         <button 
           onClick={() => exportSessionExcel(activeSession.id)}
           disabled={sessionItems.length === 0}
-          className="flex-1 bg-white border-2 border-slate-200 p-4 rounded-2xl font-bold text-slate-600 shadow-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all disabled:opacity-50"
+          className="flex-1 bg-white border-2 border-slate-200 p-4 rounded-lg font-bold text-slate-600 shadow-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all disabled:opacity-50"
         >
           <Save size={20} /> Excel
         </button>
         <button 
           onClick={handleFinish}
           disabled={isLoading || sessionItems.length === 0}
-          className="flex-1 bg-emerald-600 text-white p-4 rounded-2xl font-bold shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50"
+          className="flex-1 bg-emerald-600 text-white p-4 rounded-lg font-bold shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50"
         >
           <Send size={20} /> Sheets
         </button>
