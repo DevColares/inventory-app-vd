@@ -17,9 +17,9 @@ const SessionTable = ({ items, onUpdate }) => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden session-table-container">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-100">
+        <table className="min-w-full divide-y divide-slate-100 session-table">
           <thead className="bg-slate-50/50">
             <tr>
               <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Produto</th>
@@ -37,7 +37,7 @@ const SessionTable = ({ items, onUpdate }) => {
               return (
                 <tr key={item.ean + item.timestamp} className={`hover:bg-blue-50/30 transition-colors ${index === 0 ? 'bg-blue-50/20' : ''}`}>
                   <td className="px-4 py-4">
-                    <span className="block font-bold text-slate-900 text-sm truncate max-w-[150px]">{item.name}</span>
+                    <span className="block font-bold text-slate-900 text-sm truncate max-w-[150px] product-name-cell">{item.name}</span>
                     <span className="text-[10px] font-mono text-slate-400 uppercase">{item.ean}</span>
                   </td>
                   <td className="px-4 py-4 text-center">

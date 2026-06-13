@@ -19,8 +19,8 @@ const ProductInfo = ({ product, onConfirm, onCancel }) => {
   if (!product) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-backdrop">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 modal-content">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Registrar Contagem</h2>
           

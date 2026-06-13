@@ -163,7 +163,7 @@ const InventoryApp = () => {
 
   if (!activeSession) {
     return (
-      <div className="max-w-xl mx-auto p-4 min-h-screen flex flex-col justify-center relative">
+      <div className="max-w-xl mx-auto p-4 min-h-screen flex flex-col justify-center relative main-container">
         <button 
           onClick={() => setShowConfig(true)}
           className="absolute top-4 right-4 p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-blue-600 hover:shadow-lg transition-all"
@@ -289,7 +289,7 @@ const InventoryApp = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 min-h-screen pb-32">
+    <div className="max-w-3xl mx-auto p-4 min-h-screen pb-32 main-container">
       <header className="flex items-center justify-between mb-8 gap-4">
         <button 
           onClick={() => setActiveSession(null)}

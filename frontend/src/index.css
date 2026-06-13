@@ -25,3 +25,53 @@
     @apply bg-white rounded-2xl shadow-sm border border-slate-100 p-5;
   }
 }
+
+/* --- MEDIA QUERIES PARA LAYOUT MOBILE --- */
+@media (max-width: 640px) {
+  body {
+    @apply text-sm;
+  }
+
+  .card {
+    @apply p-4 rounded-xl;
+  }
+
+  .btn-primary {
+    @apply py-3 px-4;
+  }
+
+  h1 {
+    @apply text-3xl !important;
+  }
+
+  h2 {
+    @apply text-xl !important;
+  }
+
+  /* Ajustes para a tabela de inventário no mobile */
+  .session-table-container {
+    @apply -mx-4 rounded-none border-x-0;
+  }
+
+  .session-table th, 
+  .session-table td {
+    @apply px-2 py-3 !important;
+  }
+
+  .product-name-cell {
+    @apply max-w-[120px] !important;
+  }
+
+  .main-container {
+    @apply p-3 !important;
+  }
+
+  /* Ajuste do modal de confirmação */
+  .modal-backdrop {
+    @apply items-end p-0 !important;
+  }
+
+  .modal-content {
+    @apply rounded-b-none rounded-t-3xl max-w-full !important;
+  }
+}
