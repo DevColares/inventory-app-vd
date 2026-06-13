@@ -289,7 +289,7 @@ const InventoryApp = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 min-h-screen pb-32 main-container">
+    <div className="max-w-3xl mx-auto p-4 min-h-screen pb-48 main-container">
       <header className="flex items-center justify-between mb-8 gap-4">
         <button 
           onClick={() => setActiveSession(null)}

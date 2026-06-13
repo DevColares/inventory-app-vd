@@ -50,7 +50,7 @@
 
   /* Ajustes para a tabela de inventário no mobile */
   .session-table-container {
-    @apply -mx-4 rounded-none border-x-0;
+    @apply -mx-4 rounded-none border-x-0 mb-20;
   }
 
   .session-table th, 
@@ -63,7 +63,7 @@
   }
 
   .main-container {
-    @apply p-3 !important;
+    @apply p-3 pb-32 !important;
   }
 
   /* Ajuste do modal de confirmação */
