@@ -17,7 +17,7 @@ const SessionTable = ({ items, onUpdate }) => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden session-table-container">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden session-table-container">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-100 session-table">
           <thead className="bg-slate-50/50">
