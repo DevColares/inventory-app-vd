@@ -216,10 +216,13 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
     }))
   };
 
+  console.log("--- DEBUG GOOGLE SHEETS ---");
+  console.log("URL:", webAppUrl);
+  console.log("Payload:", payload);
+
   try {
-    // Sending as text/plain is a trick to avoid CORS pre-flight (OPTIONS)
-    // while still delivering the JSON string to GAS.
-    await fetch(webAppUrl, {
+    console.log("Iniciando fetch...");
+    const response = await fetch(webAppUrl, {
       method: 'POST',
       mode: 'no-cors', 
       headers: {
@@ -228,9 +231,10 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
       body: JSON.stringify(payload)
     });
 
+    console.log("Fetch concluído (modo no-cors). Verifique se os dados apareceram na planilha.");
     return { message: "Dados enviados! Verifique sua planilha em alguns segundos." };
   } catch (error) {
-    console.error("Erro na requisição:", error);
-    throw new Error("Não foi possível conectar ao Google Sheets. Verifique a URL.");
+    console.error("ERRO NO FETCH:", error);
+    throw new Error("Não foi possível conectar ao Google Sheets: " + error.message);
   }
 };
