@@ -45,7 +45,7 @@ const SessionTable = ({ items, onUpdate }) => {
                       type="number"
                       value={item.system_qty}
                       onChange={(e) => handleQtyChange(item, 'system_qty', e.target.value)}
-                      className="w-12 text-center text-sm font-medium text-slate-400 bg-transparent hover:bg-slate-100 rounded-lg py-1 transition-colors outline-none"
+                      className="w-10 text-center text-sm font-medium text-slate-400 bg-transparent hover:bg-slate-100 rounded-lg py-1 transition-colors outline-none"
                     />
                   </td>
                   <td className="px-4 py-4 text-center">
@@ -53,7 +53,7 @@ const SessionTable = ({ items, onUpdate }) => {
                       type="number"
                       value={item.physical_qty}
                       onChange={(e) => handleQtyChange(item, 'physical_qty', e.target.value)}
-                      className="w-14 text-center text-sm font-bold text-slate-900 bg-slate-100 rounded-lg py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-12 text-center text-sm font-bold text-slate-900 bg-slate-100 rounded-lg py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </td>
                   <td className="px-4 py-4 text-right">

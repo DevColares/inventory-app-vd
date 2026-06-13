@@ -50,20 +50,21 @@
 
   /* Ajustes para a tabela de inventário no mobile */
   .session-table-container {
-    @apply -mx-4 rounded-none border-x-0 mb-20;
+    @apply -mx-3 rounded-none border-x-0 mb-20;
   }
 
   .session-table th, 
   .session-table td {
-    @apply px-2 py-3 !important;
+    @apply px-1 py-3 !important;
   }
 
   .product-name-cell {
-    @apply max-w-[120px] !important;
+    @apply max-w-[100px] !important;
   }
 
   .main-container {
     @apply p-3 pb-32 !important;
+    overflow-x: hidden;
   }
 
   /* Ajuste do modal de confirmação */
