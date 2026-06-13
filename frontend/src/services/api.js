@@ -93,9 +93,7 @@ export const addSessionItem = async (sessionId, ean, systemQty, physicalQty) => 
   const newItem = {
     ean,
     name,
-    system_qty: finalSystemQty,
     physical_qty: finalPhysicalQty,
-    divergence: finalPhysicalQty - finalSystemQty,
     timestamp: Date.now()
   };
   
@@ -120,11 +118,8 @@ export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty) 
   if (idx === -1) return null;
 
   const item = session.items[idx];
-  item.system_qty = systemQty;
   item.physical_qty = physicalQty;
-  item.divergence = physicalQty - systemQty;
-  item.timestamp = Date.now(); // Update timestamp on edit to move to top? 
-  // User asked for "descending order", usually means newest first.
+  item.timestamp = Date.now(); 
 
   session.items[idx] = item;
   sessions[sessionIdx] = session;
@@ -188,9 +183,7 @@ export const exportSessionExcel = async (sessionId) => {
   const data = session.items.map(item => ({
     SKU: item.ean,
     Nome: item.name,
-    'Saldo Loja': item.system_qty,
-    'Saldo Físico': item.physical_qty,
-    Divergência: item.divergence
+    'Saldo Físico': item.physical_qty
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
@@ -210,9 +203,7 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
     items: session.items.map(item => ({
       sku: item.ean,
       nome: item.name,
-      loja: item.system_qty,
-      fisico: item.physical_qty,
-      divergencia: item.divergence
+      fisico: item.physical_qty
     }))
   };
 
