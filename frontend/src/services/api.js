@@ -217,18 +217,20 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
   };
 
   try {
-    // We remove no-cors because it prevents sending the JSON content-type correctly.
-    // Google Apps Script will receive the data, even if the browser shows a CORS warning on the response.
-    const response = await fetch(webAppUrl, {
+    // Sending as text/plain is a trick to avoid CORS pre-flight (OPTIONS)
+    // while still delivering the JSON string to GAS.
+    await fetch(webAppUrl, {
       method: 'POST',
+      mode: 'no-cors', 
+      headers: {
+        'Content-Type': 'text/plain',
+      },
       body: JSON.stringify(payload)
     });
 
-    return { message: "Dados enviados com sucesso!" };
+    return { message: "Dados enviados! Verifique sua planilha em alguns segundos." };
   } catch (error) {
-    // If it's a CORS error, the request might have actually succeeded 
-    // but the response was blocked. In many cases with GAS, the data arrives.
-    console.error("Erro ao enviar:", error);
-    return { message: "Solicitação enviada (verifique a planilha)." };
+    console.error("Erro na requisição:", error);
+    throw new Error("Não foi possível conectar ao Google Sheets. Verifique a URL.");
   }
 };
