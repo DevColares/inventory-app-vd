@@ -5,37 +5,46 @@
   2. Apague o código existente e cole este abaixo
   3. Clique em 'Implantar' > 'Nova implantação'
   4. Tipo: 'App da Web'
-  5. Descrição: 'API InveStory'
+  5. Descrição: 'API InveStory com Abas'
   6. Executar como: 'Eu'
-  7. Quem tem acesso: 'Qualquer pessoa' (Importante para que o app consiga enviar)
+  7. Quem tem acesso: 'Qualquer pessoa'
   8. Copie a URL gerada e cole nas configurações do InveStory
 */
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheetName = data.sessionName || "Geral";
     
-    // Adiciona cabeçalho se a planilha estiver vazia
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Data', 'Inventário', 'SKU/EAN', 'Produto', 'Qtd Física']);
-      sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#f1f5f9');
+    // Tenta encontrar a aba pelo nome, se não existir, cria uma nova
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      // Adiciona cabeçalho na nova aba
+      sheet.appendRow(['Data/Hora', 'SKU/EAN', 'Produto', 'Qtd Física']);
+      sheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+      sheet.setFrozenRows(1); // Congela a primeira linha
     }
     
-    // Insere os dados
+    // Insere os dados dos itens
     data.items.forEach(function(item) {
       sheet.appendRow([
         data.date,
-        data.sessionName,
         item.sku,
         item.nome,
         item.fisico
       ]);
     });
     
-    return ContentService.createTextOutput("Sucesso").setMimeType(ContentService.MimeType.TEXT);
+    // Ajusta o tamanho das colunas automaticamente
+    sheet.autoResizeColumns(1, 4);
+    
+    return ContentService.createTextOutput("Sucesso: Dados enviados para a aba " + sheetName)
+      .setMimeType(ContentService.MimeType.TEXT);
     
   } catch (error) {
-    return ContentService.createTextOutput("Erro: " + error.toString()).setMimeType(ContentService.MimeType.TEXT);
+    return ContentService.createTextOutput("Erro: " + error.toString())
+      .setMimeType(ContentService.MimeType.TEXT);
   }
 }
