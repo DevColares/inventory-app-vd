@@ -5,10 +5,10 @@ import { Howl } from 'howler';
 const Scanner = ({ onScan }) => {
   const [error, setError] = useState(null);
   
-  // Preload beep sound
+  // Preload authentic barcode scanner beep sound
   const beep = new Howl({
-    src: ['https://assets.mixkit.co/active_storage/sfx/766/766-preview.mp3'],
-    volume: 0.5
+    src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], // High pitched short beep
+    volume: 0.6
   });
 
   useEffect(() => {
