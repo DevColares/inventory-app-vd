@@ -1,59 +1,57 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X, FileText } from 'lucide-react';
+import { toast } from 'sonner';
 import Scanner from './Scanner';
 import ProductInfo from './ProductInfo';
 import SessionTable from './SessionTable';
+import { useInventory } from '../services/InventoryContext';
 import { 
   getProduct, 
-  addSessionItem, 
   uploadProductsExcel, 
   exportSessionExcel, 
-  getSessionItems, 
-  updateSessionItem,
-  getSessions,
-  createSession,
-  deleteSession,
-  sendToGoogleSheets
+  exportSessionPDF,
+  sendToGoogleSheets 
 } from '../services/api';
 
 const InventoryApp = () => {
-  const [activeSession, setActiveSession] = useState(null);
-  const [sessions, setSessions] = useState([]);
+  const { 
+    sessions, 
+    activeSession, 
+    setActiveSession, 
+    sessionItems, 
+    isLoading, 
+    setIsLoading,
+    config,
+    updateConfig,
+    createSession,
+    deleteSession,
+    addItem,
+    updateItem
+  } = useInventory();
+
   const [ean, setEan] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
-  const [sessionItems, setSessionItems] = useState([]);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
-  const [googleUrl, setGoogleUrl] = useState(localStorage.getItem('google_sheets_url') || '');
+  const [googleUrl, setGoogleUrl] = useState(config.googleSheetsUrl);
+  const [fastScan, setFastScan] = useState(config.fastScanMode);
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    setSessions(getSessions());
-  }, []);
-
-  useEffect(() => {
-    if (activeSession) {
-      getSessionItems(activeSession.id).then(items => setSessionItems(items));
-    }
-  }, [activeSession]);
 
   const handleSaveConfig = (e) => {
     e.preventDefault();
-    localStorage.setItem('google_sheets_url', googleUrl);
+    updateConfig({ 
+      googleSheetsUrl: googleUrl,
+      fastScanMode: fastScan
+    });
     setShowConfig(false);
-    setSuccessMsg('Configurações salvas!');
-    setTimeout(() => setSuccessMsg(''), 3000);
+    toast.success('Configurações salvas!');
   };
 
   const handleCreateSession = () => {
     const name = prompt('Nome do novo inventário:', `Inventário ${new Date().toLocaleDateString()}`);
     if (name) {
-      const newSession = createSession(name);
-      setSessions(getSessions());
-      setActiveSession(newSession);
+      createSession(name);
+      toast.success('Inventário criado!');
     }
   };
 
@@ -61,7 +59,7 @@ const InventoryApp = () => {
     e.stopPropagation();
     if (confirm('Deseja excluir este inventário permanentemente?')) {
       deleteSession(id);
-      setSessions(getSessions());
+      toast.error('Inventário excluído');
     }
   };
 
@@ -69,51 +67,51 @@ const InventoryApp = () => {
     e.preventDefault();
     if (!ean) return;
     try {
-      setError('');
       const product = await getProduct(ean);
       setCurrentProduct(product);
       setShowScanner(false);
     } catch (err) {
       setCurrentProduct(null);
-      setError('Produto não encontrado ou erro na rede.');
+      toast.error('Produto não encontrado');
     }
   };
 
   const handleScan = async (decodedText) => {
     setEan(decodedText);
     try {
-      setError('');
-      setSuccessMsg('');
       const product = await getProduct(decodedText);
-      setCurrentProduct(product);
-      setShowScanner(false);
+      if (config.fastScanMode) {
+        await addItem(product.ean, product.system_qty, 1);
+        toast.success(`+1: ${product.name}`);
+        setEan('');
+      } else {
+        setCurrentProduct(product);
+        setShowScanner(false);
+      }
     } catch (err) {
       setCurrentProduct(null);
-      setError('Produto lido não encontrado.');
-      setShowScanner(false);
+      toast.error('Produto não encontrado');
     }
   };
 
   const handleConfirmQty = async (systemQty, physicalQty) => {
     if (!currentProduct || !activeSession) return;
     try {
-      await addSessionItem(activeSession.id, currentProduct.ean, systemQty, physicalQty);
-      const updatedItems = await getSessionItems(activeSession.id);
-      setSessionItems(updatedItems);
+      await addItem(currentProduct.ean, systemQty, physicalQty);
       setCurrentProduct(null);
       setEan('');
+      toast.success('Item adicionado');
     } catch (err) {
-      setError('Erro ao registrar item na sessão.');
+      toast.error('Erro ao registrar item');
     }
   };
 
   const handleUpdateItem = async (ean, systemQty, physicalQty) => {
     try {
-      await updateSessionItem(activeSession.id, ean, systemQty, physicalQty);
-      const updatedItems = await getSessionItems(activeSession.id);
-      setSessionItems(updatedItems);
+      await updateItem(ean, systemQty, physicalQty);
+      toast.success('Quantidade atualizada');
     } catch (err) {
-      setError('Erro ao atualizar item.');
+      toast.error('Erro ao atualizar item');
     }
   };
 
@@ -127,14 +125,11 @@ const InventoryApp = () => {
     if (!file) return;
     try {
       setIsLoading(true);
-      setError('');
-      setSuccessMsg('Enviando planilha de produtos...');
       const response = await uploadProductsExcel(file);
-      setSuccessMsg(response.message);
+      toast.success(response.message);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
-      setError('Erro ao enviar a planilha.');
-      setSuccessMsg('');
+      toast.error('Erro ao enviar a planilha');
     } finally {
       setIsLoading(false);
     }
@@ -144,18 +139,15 @@ const InventoryApp = () => {
     if (!activeSession) return;
     try {
       setIsLoading(true);
-      setError('');
-      
-      const webAppUrl = localStorage.getItem('google_sheets_url');
-      if (webAppUrl) {
-        await sendToGoogleSheets(activeSession.id, webAppUrl);
-        setSuccessMsg('Inventário finalizado e enviado para o Google Sheets!');
+      if (config.googleSheetsUrl) {
+        await sendToGoogleSheets(activeSession.id, config.googleSheetsUrl);
+        toast.success('Enviado para o Google Sheets!');
       } else {
         await exportSessionExcel(activeSession.id);
-        setSuccessMsg('Inventário exportado para Excel (URL do Google Sheets não configurada)');
+        toast.info('Exportado para Excel');
       }
     } catch (err) {
-      setError('Erro ao finalizar inventário: ' + err.message);
+      toast.error('Erro ao finalizar: ' + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -203,7 +195,7 @@ const InventoryApp = () => {
                   Nenhum histórico encontrado
                 </div>
               ) : (
-                sessions.sort((a,b) => b.id - a.id).map(session => (
+                [...sessions].sort((a,b) => b.id - a.id).map(session => (
                   <div 
                     key={session.id}
                     onClick={() => setActiveSession(session)}
@@ -253,7 +245,7 @@ const InventoryApp = () => {
                   <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleSaveConfig} className="p-6 space-y-4">
+              <form onSubmit={handleSaveConfig} className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Google Sheets Web App URL</label>
                   <input 
@@ -262,12 +254,23 @@ const InventoryApp = () => {
                     onChange={(e) => setGoogleUrl(e.target.value)}
                     placeholder="https://script.google.com/macros/s/..."
                     className="w-full border-2 border-slate-100 rounded-lg p-4 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
-                    required
                   />
-                  <p className="text-[10px] text-slate-400 mt-2 px-1">
-                    Insira a URL gerada na implantação do Apps Script para enviar os dados automaticamente.
-                  </p>
                 </div>
+
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                  <div>
+                    <span className="block font-bold text-slate-800 text-sm">Bip Rápido (+1)</span>
+                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Soma 1 sem abrir modal</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFastScan(!fastScan)}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${fastScan ? 'bg-blue-600' : 'bg-slate-300'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${fastScan ? 'left-7' : 'left-1'}`} />
+                  </button>
+                </div>
+
                 <button 
                   type="submit"
                   className="w-full bg-slate-900 text-white font-bold py-4 rounded-lg hover:bg-slate-800 transition-all shadow-lg"
@@ -276,12 +279,6 @@ const InventoryApp = () => {
                 </button>
               </form>
             </div>
-          </div>
-        )}
-
-        {successMsg && (
-          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-xl animate-in slide-in-from-bottom-4 z-[70]">
-            <p className="font-bold text-sm">{successMsg}</p>
           </div>
         )}
       </div>
@@ -331,32 +328,11 @@ const InventoryApp = () => {
         </form>
       </div>
 
-      {error && (
-        <div className="flex items-center gap-3 bg-red-50 text-red-700 p-5 rounded-lg mb-6 border border-red-100 animate-in slide-in-from-top-2">
-          <AlertCircle size={20} className="shrink-0" />
-          <p className="text-sm font-medium">{error}</p>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="flex items-center gap-3 bg-emerald-50 text-emerald-700 p-5 rounded-lg mb-6 border border-emerald-100 animate-in slide-in-from-top-2">
-          <div className="p-1 bg-emerald-500 text-white rounded-full">
-            <Plus size={14} className="rotate-45" />
-          </div>
-          <p className="text-sm font-medium">{successMsg}</p>
-        </div>
-      )}
-
       {showScanner && (
         <div className="mb-6 rounded-lg overflow-hidden shadow-xl border-4 border-white">
           <Scanner onScan={handleScan} />
         </div>
       )}
-
-      <div className="mb-4 flex items-center justify-between px-2">
-        <h3 className="font-bold text-slate-800">Contagem Física</h3>
-        <span className="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-1 rounded-full">{sessionItems.length} Itens</span>
-      </div>
 
       <SessionTable items={sessionItems} onUpdate={handleUpdateItem} />
       
@@ -366,20 +342,29 @@ const InventoryApp = () => {
         onCancel={handleCancelModal}
       />
 
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl flex gap-3 px-2">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl flex gap-2 px-2">
         <button 
           onClick={() => exportSessionExcel(activeSession.id)}
           disabled={sessionItems.length === 0}
-          className="flex-1 bg-white border-2 border-slate-200 p-4 rounded-lg font-bold text-slate-600 shadow-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all disabled:opacity-50"
+          className="flex-1 bg-white border border-slate-200 p-4 rounded-xl font-bold text-slate-600 shadow-lg flex items-center justify-center gap-2 hover:bg-slate-50 transition-all disabled:opacity-50"
+          title="Exportar Excel"
         >
-          <Save size={20} /> Excel
+          <Save size={20} /> <span className="hidden sm:inline">Excel</span>
+        </button>
+        <button 
+          onClick={() => exportSessionPDF(activeSession.id)}
+          disabled={sessionItems.length === 0}
+          className="flex-1 bg-white border border-slate-200 p-4 rounded-xl font-bold text-slate-600 shadow-lg flex items-center justify-center gap-2 hover:bg-slate-50 transition-all disabled:opacity-50"
+          title="Exportar PDF"
+        >
+          <FileText size={20} /> <span className="hidden sm:inline">PDF</span>
         </button>
         <button 
           onClick={handleFinish}
           disabled={isLoading || sessionItems.length === 0}
-          className="flex-1 bg-emerald-600 text-white p-4 rounded-lg font-bold shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50"
+          className="flex-[2] bg-emerald-600 text-white p-4 rounded-xl font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50"
         >
-          <Send size={20} /> Sheets
+          <Send size={20} /> {isLoading ? 'Enviando...' : 'Finalizar'}
         </button>
       </div>
     </div>

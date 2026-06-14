@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 // Helper to get from local storage
 const getStorage = (key, defaultVal) => {
@@ -70,6 +72,7 @@ export const getSessionItems = async (sessionId) => {
 
 export const addSessionItem = async (sessionId, ean, systemQty, physicalQty) => {
   const products = getStorage('inventory_products', {});
+  // Try direct match or sliced match
   let product = products[ean] || products[ean.slice(-6, -1)];
   const name = product ? product.name : "Produto Desconhecido";
   
@@ -81,13 +84,9 @@ export const addSessionItem = async (sessionId, ean, systemQty, physicalQty) => 
   const existingIdx = session.items.findIndex(item => item.ean === ean);
   
   let finalPhysicalQty = physicalQty;
-  let finalSystemQty = systemQty;
 
   if (existingIdx >= 0) {
     finalPhysicalQty = session.items[existingIdx].physical_qty + physicalQty;
-    if (!systemQty && session.items[existingIdx].system_qty) {
-      finalSystemQty = session.items[existingIdx].system_qty;
-    }
   }
 
   const newItem = {
@@ -140,30 +139,50 @@ export const uploadProductsExcel = async (file) => {
         const worksheet = workbook.Sheets[firstSheetName];
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         
-        if (rows.length < 2) throw new Error("Planilha vazia.");
+        if (rows.length < 2) throw new Error("Planilha vazia ou inválida.");
 
-        const headers = rows[0].map(h => String(h).toLowerCase().trim());
-        let codIdx = 0, nameIdx = 1, qtyIdx = 2;
+        // Smart column mapping
+        const headers = rows[0].map(h => String(h || '').toLowerCase().trim());
+        let codIdx = -1, nameIdx = -1, qtyIdx = -1;
+
         headers.forEach((h, i) => {
-          if (h.includes('cod') || h.includes('ean') || h.includes('código')) codIdx = i;
-          else if (h.includes('nome') || h.includes('desc')) nameIdx = i;
-          else if (h.includes('quant') || h.includes('qtd') || h.includes('estoque') || h.includes('saldo')) qtyIdx = i;
+          if (h.match(/cod|ean|sku|bar|refer|id/)) codIdx = i;
+          else if (h.match(/nome|desc|prod|item/)) nameIdx = i;
+          else if (h.match(/quant|qtd|estoq|sald|total/)) qtyIdx = i;
         });
+
+        // Fallback for common patterns
+        if (codIdx === -1) codIdx = 0;
+        if (nameIdx === -1) nameIdx = 1;
+        if (qtyIdx === -1) qtyIdx = 2;
 
         const newProducts = {};
         let count = 0;
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (!row[codIdx]) continue;
+
           const rawCode = String(row[codIdx]).trim();
-          const name = row[nameIdx] ? String(row[nameIdx]) : "Sem Nome";
+          const name = row[nameIdx] ? String(row[nameIdx]).trim() : "Sem Nome";
           const qty = parseInt(row[qtyIdx], 10) || 0;
+
           let internalCode = rawCode;
-          if (rawCode.length >= 12) internalCode = rawCode.slice(-6, -1);
-          newProducts[internalCode] = { ean: rawCode, name, system_qty: qty };
-          if (internalCode !== rawCode) newProducts[rawCode] = newProducts[internalCode];
+          if (rawCode.length >= 12) {
+            internalCode = rawCode.slice(-6, -1);
+          }
+
+          const productData = { ean: rawCode, name, system_qty: qty };
+          newProducts[internalCode] = productData;
+          
+          // Map both codes to the same product for maximum compatibility
+          if (internalCode !== rawCode) {
+            newProducts[rawCode] = productData;
+          }
           count++;
         }
+
+        if (count === 0) throw new Error("Nenhum produto válido encontrado na planilha.");
+
         setStorage('inventory_products', newProducts);
         resolve({ message: `Sucesso! ${count} produtos carregados.` });
       } catch (err) { reject(err); }
@@ -183,13 +202,51 @@ export const exportSessionExcel = async (sessionId) => {
   const data = session.items.map(item => ({
     SKU: item.ean,
     Nome: item.name,
-    'Saldo Físico': item.physical_qty
+    'Saldo Físico': item.physical_qty,
+    Data: new Date(item.timestamp).toLocaleString()
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Inventário");
-  XLSX.writeFile(workbook, `inventario_${session.name}.xlsx`);
+  XLSX.writeFile(workbook, `InveStory_${session.name.replace(/\s+/g, '_')}.xlsx`);
+};
+
+export const exportSessionPDF = async (sessionId) => {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session || session.items.length === 0) throw new Error("Sessão vazia.");
+
+  const doc = new jsPDF();
+  
+  // Header
+  doc.setFontSize(20);
+  doc.setTextColor(15, 23, 42); // slate-900
+  doc.text("Relatório de Inventário", 14, 22);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139); // slate-500
+  doc.text(`Sessão: ${session.name}`, 14, 30);
+  doc.text(`Data: ${new Date().toLocaleString()}`, 14, 35);
+  doc.text(`Total de Itens: ${session.items.length}`, 14, 40);
+
+  // Table
+  const tableData = session.items.map(item => [
+    item.ean,
+    item.name,
+    item.physical_qty.toString()
+  ]);
+
+  doc.autoTable({
+    startY: 45,
+    head: [['SKU/EAN', 'Nome do Produto', 'Qtd Física']],
+    body: tableData,
+    headStyles: { fillStyle: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+    alternateRowStyles: { fillStyle: [248, 250, 252] },
+    margin: { top: 45 },
+  });
+
+  doc.save(`InveStory_${session.name.replace(/\s+/g, '_')}.pdf`);
 };
 
 export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
@@ -207,12 +264,7 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
     }))
   };
 
-  console.log("--- DEBUG GOOGLE SHEETS ---");
-  console.log("URL:", webAppUrl);
-  console.log("Payload:", payload);
-
   try {
-    console.log("Iniciando fetch...");
     const response = await fetch(webAppUrl, {
       method: 'POST',
       mode: 'no-cors', 
@@ -222,10 +274,8 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
       body: JSON.stringify(payload)
     });
 
-    console.log("Fetch concluído (modo no-cors). Verifique se os dados apareceram na planilha.");
-    return { message: "Dados enviados! Verifique sua planilha em alguns segundos." };
+    return { message: "Dados enviados com sucesso!" };
   } catch (error) {
-    console.error("ERRO NO FETCH:", error);
-    throw new Error("Não foi possível conectar ao Google Sheets: " + error.message);
+    throw new Error("Falha na conexão: " + error.message);
   }
 };

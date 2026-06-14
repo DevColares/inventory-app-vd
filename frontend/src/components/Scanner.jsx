@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Howl } from 'howler';
 
 const Scanner = ({ onScan }) => {
   const [error, setError] = useState(null);
+  
+  // Preload beep sound
+  const beep = new Howl({
+    src: ['https://assets.mixkit.co/active_storage/sfx/766/766-preview.mp3'],
+    volume: 0.5
+  });
 
   useEffect(() => {
     let html5QrCode = new Html5Qrcode("reader");
+    let lastScanTime = 0;
 
     html5QrCode.start(
       { facingMode: "environment" },
@@ -17,12 +25,19 @@ const Scanner = ({ onScan }) => {
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
             Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.QR_CODE
         ]
       },
       (decodedText) => {
-        onScan(decodedText);
-        html5QrCode.stop();
+        const now = Date.now();
+        // Debounce: prevent multiple scans of same code within 1.5s
+        if (now - lastScanTime > 1500) {
+          beep.play();
+          onScan(decodedText);
+          lastScanTime = now;
+        }
       },
       (errorMessage) => { /* Ignore errors */ }
     ).catch((err) => {
