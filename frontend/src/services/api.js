@@ -84,15 +84,20 @@ export const addSessionItem = async (sessionId, ean, systemQty, physicalQty) => 
   const existingIdx = session.items.findIndex(item => item.ean === ean);
   
   let finalPhysicalQty = physicalQty;
+  let finalSystemQty = systemQty ?? (product ? product.system_qty : 0);
 
   if (existingIdx >= 0) {
     finalPhysicalQty = session.items[existingIdx].physical_qty + physicalQty;
+    if (systemQty === undefined || systemQty === null) {
+      finalSystemQty = session.items[existingIdx].system_qty ?? finalSystemQty;
+    }
   }
 
   const newItem = {
     ean,
     name,
     physical_qty: finalPhysicalQty,
+    system_qty: finalSystemQty,
     timestamp: Date.now()
   };
   
@@ -118,6 +123,9 @@ export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty) 
 
   const item = session.items[idx];
   item.physical_qty = physicalQty;
+  if (systemQty !== undefined && systemQty !== null) {
+    item.system_qty = systemQty;
+  }
   item.timestamp = Date.now(); 
 
   session.items[idx] = item;

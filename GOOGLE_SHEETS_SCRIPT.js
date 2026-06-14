@@ -5,7 +5,7 @@
   2. Apague o código existente e cole este abaixo
   3. Clique em 'Implantar' > 'Nova implantação'
   4. Tipo: 'App da Web'
-  5. Descrição: 'API InveStory com Abas'
+  5. Descrição: 'API InveStory com Colunas de Apoio'
   6. Executar como: 'Eu'
   7. Quem tem acesso: 'Qualquer pessoa'
   8. Copie a URL gerada e cole nas configurações do InveStory
@@ -17,34 +17,32 @@ function doPost(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheetName = data.sessionName || "Geral";
     
-    // Tenta encontrar a aba pelo nome, se não existir, cria uma nova
     var sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
-      // Adiciona cabeçalho na nova aba
-      sheet.appendRow(['Data/Hora', 'SKU/EAN', 'Produto', 'Qtd Física']);
-      sheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-      sheet.setFrozenRows(1); // Congela a primeira linha
+      // Cria o cabeçalho completo de A até F
+      // E e F ficam para o processo externo do usuário
+      sheet.appendRow(['Data/Hora', 'SKU/EAN', 'Produto', 'Qtd Física', 'Saldo Loja', 'Divergência']);
+      sheet.getRange(1, 1, 1, 6).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+      sheet.setFrozenRows(1);
     }
     
-    // Insere os dados dos itens
     data.items.forEach(function(item) {
       sheet.appendRow([
         data.date,
         item.sku,
         item.nome,
-        item.fisico
+        item.fisico,
+        "", // Saldo Loja (Vazio para processo externo)
+        ""  // Divergência (Vazio para processo externo)
       ]);
     });
     
-    // Ajusta o tamanho das colunas automaticamente
-    sheet.autoResizeColumns(1, 4);
+    sheet.autoResizeColumns(1, 6);
     
-    return ContentService.createTextOutput("Sucesso: Dados enviados para a aba " + sheetName)
-      .setMimeType(ContentService.MimeType.TEXT);
+    return ContentService.createTextOutput("Sucesso").setMimeType(ContentService.MimeType.TEXT);
     
   } catch (error) {
-    return ContentService.createTextOutput("Erro: " + error.toString())
-      .setMimeType(ContentService.MimeType.TEXT);
+    return ContentService.createTextOutput("Erro: " + error.toString()).setMimeType(ContentService.MimeType.TEXT);
   }
 }
