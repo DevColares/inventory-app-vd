@@ -32,7 +32,8 @@ const InventoryApp = () => {
     createSession,
     deleteSession,
     addItem,
-    updateItem
+    updateItem,
+    toggleItem
   } = useInventory();
 
   const [activeTab, setActiveTab] = useState('inventory');
