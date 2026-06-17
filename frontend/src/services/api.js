@@ -47,11 +47,11 @@ export const createSession = (name, type = 'inventory') => {
   const sessions = getSessions();
   const newSession = {
     id: Date.now().toString(),
-    name: name || `Sessão ${new Date().toLocaleDateString()}`,
-    type: type,
+    name: name || `${type === 'inventory' ? 'Inventário' : 'Preços'} ${new Date().toLocaleDateString()}`,
     createdAt: new Date().toISOString(),
     items: [],
-    status: 'active'
+    status: 'active',
+    type: type
   };
   sessions.push(newSession);
   setStorage('inventory_sessions', sessions);
@@ -152,12 +152,14 @@ export const uploadProductsExcel = async (file) => {
 
         // Smart column mapping
         const headers = rows[0].map(h => String(h || '').toLowerCase().trim());
-        let codIdx = -1, nameIdx = -1, qtyIdx = -1;
+        let codIdx = -1, nameIdx = -1, qtyIdx = -1, priceIdx = -1, provIdx = -1;
 
         headers.forEach((h, i) => {
-          if (h.match(/cod|ean|sku|bar|refer|id/)) codIdx = i;
+          if (h.match(/cod|ean|sku|bar|refer|id|código/)) codIdx = i;
           else if (h.match(/nome|desc|prod|item/)) nameIdx = i;
-          else if (h.match(/quant|qtd|estoq|sald|total/)) qtyIdx = i;
+          else if (h.match(/quant|qtd|estoq|sald|total|saldo/)) qtyIdx = i;
+          else if (h.includes('preço') || h.includes('valor') || h.includes('price')) priceIdx = i;
+          else if (h.includes('provisão') || h.includes('prove') || h.includes('provis')) provIdx = i;
         });
 
         // Fallback for common patterns
@@ -174,13 +176,21 @@ export const uploadProductsExcel = async (file) => {
           const rawCode = String(row[codIdx]).trim();
           const name = row[nameIdx] ? String(row[nameIdx]).trim() : "Sem Nome";
           const qty = parseInt(row[qtyIdx], 10) || 0;
+          const price = priceIdx !== -1 ? row[priceIdx] : 0;
+          const provision = provIdx !== -1 ? row[provIdx] : 0;
 
           let internalCode = rawCode;
           if (rawCode.length >= 12) {
             internalCode = rawCode.slice(-6, -1);
           }
 
-          const productData = { ean: rawCode, name, system_qty: qty };
+          const productData = { 
+            ean: rawCode, 
+            name, 
+            system_qty: qty,
+            price: price,
+            provision: provision
+          };
           newProducts[internalCode] = productData;
           
           // Map both codes to the same product for maximum compatibility

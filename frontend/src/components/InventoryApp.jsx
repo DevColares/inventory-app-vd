@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X, FileText, ClipboardList, CheckSquare, Tag, Moon, Sun } from 'lucide-react';
+import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X, FileText, ClipboardList, CheckSquare, Tag, Moon, Sun, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import Scanner from './Scanner';
 import ProductInfo from './ProductInfo';
@@ -89,10 +89,11 @@ const InventoryApp = () => {
     try {
       const product = await getProduct(ean);
       
-      if (activeSession?.type !== 'inventory' && activeSession?.type !== undefined) {
-        await addItem(product.ean, product.system_qty, 1);
-        toast.success(`Registrado: ${product.name}`);
-        setEan('');
+      const isAudit = activeSession?.type === 'audit' || activeSession?.type === 'proves' || activeSession?.type === 'prices';
+
+      if (isAudit) {
+        // Auditoria mode behavior: confirmation modal first
+        setCurrentProduct(product);
       } else if (config.fastScanMode) {
         await addItem(product.ean, product.system_qty, 1);
         toast.success(`+1: ${product.name}`);
@@ -111,11 +112,11 @@ const InventoryApp = () => {
     setEan(decodedText);
     try {
       const product = await getProduct(decodedText);
+      const isAudit = activeSession?.type === 'audit' || activeSession?.type === 'proves' || activeSession?.type === 'prices';
       
-      if (activeSession?.type !== 'inventory' && activeSession?.type !== undefined) {
-        await addItem(product.ean, product.system_qty, 1);
-        toast.success(`Registrado: ${product.name}`);
-        setEan('');
+      if (isAudit) {
+        setCurrentProduct(product);
+        setShowScanner(false);
       } else if (config.fastScanMode) {
         await addItem(product.ean, product.system_qty, 1);
         toast.success(`+1: ${product.name}`);
@@ -136,7 +137,7 @@ const InventoryApp = () => {
       await addItem(currentProduct.ean, systemQty, physicalQty);
       setCurrentProduct(null);
       setEan('');
-      toast.success('Item adicionado');
+      toast.success('Item registrado');
     } catch (err) {
       toast.error('Erro ao registrar item');
     }
@@ -376,6 +377,7 @@ const InventoryApp = () => {
   }
 
   const activeTabData = TABS.find(t => t.id === (activeSession.type || 'inventory')) || TABS[0];
+  const isAudit = activeSession.type === 'audit' || activeSession.type === 'proves' || activeSession.type === 'prices';
 
   return (
     <div className="max-w-3xl mx-auto p-4 min-h-screen pb-48 main-container dark:bg-slate-950 transition-colors">
@@ -391,7 +393,9 @@ const InventoryApp = () => {
             <activeTabData.icon size={16} className={`text-${activeTabData.color}-600`} />
             <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{activeSession.name}</h1>
           </div>
-          <p className="text-xs text-slate-500">Registrando itens...</p>
+          <p className="text-xs text-slate-500">
+            {isAudit ? 'Auditoria de Preços/Proves' : 'Registrando itens...'}
+          </p>
         </div>
       </header>
 
@@ -422,16 +426,25 @@ const InventoryApp = () => {
             type="submit"
             className="w-full bg-slate-900 dark:bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-slate-800 dark:hover:bg-blue-700 transition-all active:scale-[0.98]"
           >
-            Buscar Produto
+            {isAudit ? 'Consultar Produto' : 'Buscar Produto'}
           </button>
         </form>
       </div>
 
       {showScanner && (
         <div className="mb-6 rounded-lg overflow-hidden shadow-xl border-4 border-white dark:border-slate-800">
-          <Scanner onScan={handleScan} />
+          <Scanner onScan={handleScan} useDelay={isAudit} />
         </div>
       )}
+
+      <div className="mb-4 flex items-center justify-between px-2">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200">
+          {isAudit ? 'Itens Auditados' : 'Contagem Física'}
+        </h3>
+        <span className="text-xs font-bold bg-slate-100 dark:bg-slate-900 text-slate-500 px-3 py-1 rounded-full">
+          {sessionItems.length} Itens
+        </span>
+      </div>
 
       <SessionTable items={sessionItems} onUpdate={handleUpdateItem} />
       
@@ -439,6 +452,7 @@ const InventoryApp = () => {
         product={currentProduct} 
         onConfirm={handleConfirmQty} 
         onCancel={handleCancelModal}
+        mode={activeSession.type}
       />
 
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl flex gap-2 px-2">

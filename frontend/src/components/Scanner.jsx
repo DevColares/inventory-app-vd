@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Howl } from 'howler';
 
-const Scanner = ({ onScan }) => {
+const Scanner = ({ onScan, useDelay = false }) => {
   const [error, setError] = useState(null);
+  const isProcessing = useRef(false);
   
   // Preload authentic barcode scanner beep sound
   const beep = new Howl({
@@ -32,11 +33,24 @@ const Scanner = ({ onScan }) => {
       },
       (decodedText) => {
         const now = Date.now();
-        // Debounce: prevent multiple scans of same code within 1.5s
-        if (now - lastScanTime > 1500) {
+
+        if (useDelay) {
+          if (isProcessing.current) return;
+          isProcessing.current = true;
           beep.play();
-          onScan(decodedText);
-          lastScanTime = now;
+          
+          // Delay para modo Auditoria (Preços e Proves)
+          setTimeout(() => {
+            onScan(decodedText);
+            html5QrCode.stop().catch(err => console.error(err));
+          }, 500);
+        } else {
+          // Debounce: prevent multiple scans of same code within 1.5s
+          if (now - lastScanTime > 1500) {
+            beep.play();
+            onScan(decodedText);
+            lastScanTime = now;
+          }
         }
       },
       (errorMessage) => { /* Ignore errors */ }
@@ -49,7 +63,7 @@ const Scanner = ({ onScan }) => {
         html5QrCode.stop().catch(err => console.error("Failed to stop scanner", err));
       }
     };
-  }, [onScan]);
+  }, [onScan, useDelay]);
 
   return (
     <div className="w-full">
