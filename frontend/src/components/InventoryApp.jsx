@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X, FileText } from 'lucide-react';
+import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X, FileText, ClipboardList, CheckSquare, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import Scanner from './Scanner';
 import ProductInfo from './ProductInfo';
@@ -12,6 +12,12 @@ import {
   exportSessionPDF,
   sendToGoogleSheets 
 } from '../services/api';
+
+const TABS = [
+  { id: 'inventory', label: 'Inventário', icon: ClipboardList, color: 'blue' },
+  { id: 'proves', label: 'Proves', icon: CheckSquare, color: 'purple' },
+  { id: 'prices', label: 'Preços', icon: Tag, color: 'emerald' },
+];
 
 const InventoryApp = () => {
   const { 
@@ -29,6 +35,7 @@ const InventoryApp = () => {
     updateItem
   } = useInventory();
 
+  const [activeTab, setActiveTab] = useState('inventory');
   const [ean, setEan] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
@@ -48,18 +55,19 @@ const InventoryApp = () => {
   };
 
   const handleCreateSession = () => {
-    const name = prompt('Nome do novo inventário:', `Inventário ${new Date().toLocaleDateString()}`);
+    const tabLabel = TABS.find(t => t.id === activeTab).label;
+    const name = prompt(`Nome da nova ${tabLabel}:`, `${tabLabel} ${new Date().toLocaleDateString()}`);
     if (name) {
-      createSession(name);
-      toast.success('Inventário criado!');
+      createSession(name, activeTab);
+      toast.success(`${tabLabel} criada!`);
     }
   };
 
   const handleDeleteSession = (id, e) => {
     e.stopPropagation();
-    if (confirm('Deseja excluir este inventário permanentemente?')) {
+    if (confirm('Deseja excluir permanentemente?')) {
       deleteSession(id);
-      toast.error('Inventário excluído');
+      toast.error('Excluído');
     }
   };
 
@@ -68,8 +76,19 @@ const InventoryApp = () => {
     if (!ean) return;
     try {
       const product = await getProduct(ean);
-      setCurrentProduct(product);
-      setShowScanner(false);
+      
+      if (activeSession?.type !== 'inventory' && activeSession?.type !== undefined) {
+        await addItem(product.ean, product.system_qty, 1);
+        toast.success(`Registrado: ${product.name}`);
+        setEan('');
+      } else if (config.fastScanMode) {
+        await addItem(product.ean, product.system_qty, 1);
+        toast.success(`+1: ${product.name}`);
+        setEan('');
+      } else {
+        setCurrentProduct(product);
+        setShowScanner(false);
+      }
     } catch (err) {
       setCurrentProduct(null);
       toast.error('Produto não encontrado');
@@ -80,7 +99,12 @@ const InventoryApp = () => {
     setEan(decodedText);
     try {
       const product = await getProduct(decodedText);
-      if (config.fastScanMode) {
+      
+      if (activeSession?.type !== 'inventory' && activeSession?.type !== undefined) {
+        await addItem(product.ean, product.system_qty, 1);
+        toast.success(`Registrado: ${product.name}`);
+        setEan('');
+      } else if (config.fastScanMode) {
         await addItem(product.ean, product.system_qty, 1);
         toast.success(`+1: ${product.name}`);
         setEan('');
@@ -154,8 +178,11 @@ const InventoryApp = () => {
   };
 
   if (!activeSession) {
+    const filteredSessions = sessions.filter(s => (s.type || 'inventory') === activeTab);
+    const activeTabData = TABS.find(t => t.id === activeTab);
+
     return (
-      <div className="max-w-xl mx-auto p-4 min-h-screen flex flex-col justify-center relative main-container">
+      <div className="max-w-xl mx-auto p-4 min-h-screen flex flex-col relative main-container">
         <button 
           onClick={() => setShowConfig(true)}
           className="absolute top-4 right-4 p-3 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-blue-600 hover:shadow-lg transition-all"
@@ -163,23 +190,48 @@ const InventoryApp = () => {
           <Settings size={20} />
         </button>
 
-        <div className="text-center mb-10">
+        <div className="text-center mb-8 mt-10">
           <h1 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">InveStory</h1>
-          <p className="text-slate-500 font-medium">Gestão simplificada de inventário</p>
+          <p className="text-slate-500 font-medium">Gestão simplificada</p>
+        </div>
+
+        {/* Submenu Tabs */}
+        <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-lg transition-all ${
+                  activeTab === tab.id 
+                    ? 'bg-white shadow-sm text-slate-900 font-bold' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Icon size={20} />
+                <span className="text-[10px] uppercase tracking-wider">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="space-y-4">
           <button 
             onClick={handleCreateSession}
-            className="w-full flex items-center justify-between p-6 bg-blue-600 text-white rounded-lg shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all group"
+            className={`w-full flex items-center justify-between p-6 rounded-lg shadow-xl transition-all group ${
+              activeTab === 'inventory' ? 'bg-blue-600 shadow-blue-500/20 hover:bg-blue-700' :
+              activeTab === 'proves' ? 'bg-purple-600 shadow-purple-500/20 hover:bg-purple-700' :
+              'bg-emerald-600 shadow-emerald-500/20 hover:bg-emerald-700'
+            } text-white`}
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
                 <Plus size={24} />
               </div>
               <div className="text-left">
-                <span className="block font-bold text-lg">Criar Inventário</span>
-                <span className="text-sm text-blue-100">Iniciar nova contagem física</span>
+                <span className="block font-bold text-lg">Nova {activeTabData.label}</span>
+                <span className="text-sm text-white/80">Toque para iniciar</span>
               </div>
             </div>
             <ChevronRight size={20} />
@@ -187,15 +239,15 @@ const InventoryApp = () => {
 
           <div className="mt-8">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <History size={16} /> Inventários Anteriores
+              <History size={16} /> Histórico de {activeTabData.label}
             </h2>
             <div className="space-y-3">
-              {sessions.length === 0 ? (
+              {filteredSessions.length === 0 ? (
                 <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-lg text-slate-400">
-                  Nenhum histórico encontrado
+                  Nenhum registro encontrado
                 </div>
               ) : (
-                [...sessions].sort((a,b) => b.id - a.id).map(session => (
+                [...filteredSessions].sort((a,b) => b.id - a.id).map(session => (
                   <div 
                     key={session.id}
                     onClick={() => setActiveSession(session)}
@@ -285,6 +337,8 @@ const InventoryApp = () => {
     );
   }
 
+  const activeTabData = TABS.find(t => t.id === (activeSession.type || 'inventory')) || TABS[0];
+
   return (
     <div className="max-w-3xl mx-auto p-4 min-h-screen pb-48 main-container">
       <header className="flex items-center justify-between mb-8 gap-4">
@@ -295,12 +349,19 @@ const InventoryApp = () => {
           <ChevronRight size={24} className="rotate-180" />
         </button>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-slate-900 truncate">{activeSession.name}</h1>
-          <p className="text-xs text-slate-500">Contando itens...</p>
+          <div className="flex items-center gap-2">
+            <activeTabData.icon size={16} className={`text-${activeTabData.color}-600`} />
+            <h1 className="text-xl font-bold text-slate-900 truncate">{activeSession.name}</h1>
+          </div>
+          <p className="text-xs text-slate-500">Registrando itens...</p>
         </div>
       </header>
 
-      <div className="card mb-6 shadow-xl shadow-slate-200/50 border-0 bg-white/80 backdrop-blur-sm sticky top-4 z-40">
+      <div className={`card mb-6 shadow-xl shadow-slate-200/50 border-0 bg-white/80 backdrop-blur-sm sticky top-4 z-40 border-t-4 ${
+        activeTabData.id === 'inventory' ? 'border-blue-500' :
+        activeTabData.id === 'proves' ? 'border-purple-500' :
+        'border-emerald-500'
+      }`}>
         <form onSubmit={handleSearch} className="flex flex-col gap-3">
           <div className="relative">
             <input

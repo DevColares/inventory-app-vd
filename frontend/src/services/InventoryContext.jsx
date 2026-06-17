@@ -47,8 +47,8 @@ export const InventoryProvider = ({ children }) => {
     setSessions(fetchSessions());
   }, []);
 
-  const createSession = useCallback((name) => {
-    const newSession = apiCreateSession(name);
+  const createSession = useCallback((name, type) => {
+    const newSession = apiCreateSession(name, type);
     refreshSessions();
     setActiveSession(newSession);
     return newSession;

@@ -43,11 +43,12 @@ export const getSessions = () => {
   return getStorage('inventory_sessions', []);
 };
 
-export const createSession = (name) => {
+export const createSession = (name, type = 'inventory') => {
   const sessions = getSessions();
   const newSession = {
     id: Date.now().toString(),
-    name: name || `Inventário ${new Date().toLocaleDateString()}`,
+    name: name || `Sessão ${new Date().toLocaleDateString()}`,
+    type: type,
     createdAt: new Date().toISOString(),
     items: [],
     status: 'active'
