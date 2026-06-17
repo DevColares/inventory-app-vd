@@ -26,13 +26,23 @@ export const InventoryProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState({
     googleSheetsUrl: localStorage.getItem('google_sheets_url') || '',
-    fastScanMode: localStorage.getItem('fast_scan_mode') === 'true'
+    fastScanMode: localStorage.getItem('fast_scan_mode') === 'true',
+    darkMode: localStorage.getItem('dark_mode') === 'true'
   });
 
   // Load sessions on mount
   useEffect(() => {
     setSessions(fetchSessions());
   }, []);
+
+  // Handle Dark Mode Class
+  useEffect(() => {
+    if (config.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [config.darkMode]);
 
   // Load items when active session changes
   useEffect(() => {
@@ -84,6 +94,9 @@ export const InventoryProvider = ({ children }) => {
     }
     if (newConfig.fastScanMode !== undefined) {
       localStorage.setItem('fast_scan_mode', String(newConfig.fastScanMode));
+    }
+    if (newConfig.darkMode !== undefined) {
+      localStorage.setItem('dark_mode', String(newConfig.darkMode));
     }
   }, [config]);
 
