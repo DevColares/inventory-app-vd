@@ -14,9 +14,9 @@ import {
 } from '../services/api';
 
 const TABS = [
-  { id: 'inventory', label: 'Inventário', icon: ClipboardList, color: 'blue' },
-  { id: 'proves', label: 'Proves', icon: CheckSquare, color: 'purple' },
-  { id: 'prices', label: 'Preços', icon: Tag, color: 'emerald' },
+  { id: 'inventory', label: 'Inventário', gender: 'm', icon: ClipboardList, color: 'blue' },
+  { id: 'proves', label: 'Lista de Proves', gender: 'f', icon: CheckSquare, color: 'purple' },
+  { id: 'prices', label: 'Lista de Preços', gender: 'f', icon: Tag, color: 'emerald' },
 ];
 
 const InventoryApp = () => {
@@ -55,11 +55,12 @@ const InventoryApp = () => {
   };
 
   const handleCreateSession = () => {
-    const tabLabel = TABS.find(t => t.id === activeTab).label;
-    const name = prompt(`Nome da nova ${tabLabel}:`, `${tabLabel} ${new Date().toLocaleDateString()}`);
+    const tab = TABS.find(t => t.id === activeTab);
+    const prefix = tab.gender === 'm' ? 'Novo' : 'Nova';
+    const name = prompt(`Nome do ${prefix.toLowerCase()} ${tab.label}:`, `${tab.label} ${new Date().toLocaleDateString()}`);
     if (name) {
       createSession(name, activeTab);
-      toast.success(`${tabLabel} criada!`);
+      toast.success(`${tab.label} criad${tab.gender === 'm' ? 'o' : 'a'}!`);
     }
   };
 
@@ -230,7 +231,7 @@ const InventoryApp = () => {
                 <Plus size={24} />
               </div>
               <div className="text-left">
-                <span className="block font-bold text-lg">Nova {activeTabData.label}</span>
+                <span className="block font-bold text-lg">{activeTabData.gender === 'm' ? 'Novo' : 'Nova'} {activeTabData.label}</span>
                 <span className="text-sm text-white/80">Toque para iniciar</span>
               </div>
             </div>
