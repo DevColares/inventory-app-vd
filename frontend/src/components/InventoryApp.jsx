@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Download, AlertCircle, Plus, ChevronRight, History, Trash2, Send, Save, Settings, X, FileText, ClipboardList, CheckSquare, Tag, Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import Scanner from './Scanner';
@@ -40,17 +40,26 @@ const InventoryApp = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [showConfig, setShowConfig] = useState(false);
+  
+  // Modal local states
   const [googleUrl, setGoogleUrl] = useState(config.googleSheetsUrl);
   const [fastScan, setFastScan] = useState(config.fastScanMode);
-  const [isDarkMode, setIsDarkMode] = useState(config.darkMode);
+  
   const fileInputRef = useRef(null);
+
+  // Sync modal states when opened
+  useEffect(() => {
+    if (showConfig) {
+      setGoogleUrl(config.googleSheetsUrl);
+      setFastScan(config.fastScanMode);
+    }
+  }, [showConfig, config]);
 
   const handleSaveConfig = (e) => {
     e.preventDefault();
     updateConfig({ 
       googleSheetsUrl: googleUrl,
-      fastScanMode: fastScan,
-      darkMode: isDarkMode
+      fastScanMode: fastScan
     });
     setShowConfig(false);
     toast.success('Configurações salvas!');
@@ -195,6 +204,7 @@ const InventoryApp = () => {
 
         <div className="text-center mb-8 mt-10">
           <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Resolution</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Gestão simplificada de inventários</p>
         </div>
 
         {/* Submenu Tabs */}
@@ -315,20 +325,20 @@ const InventoryApp = () => {
 
                   <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-600'}`}>
-                        {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
+                      <div className={`p-2 rounded-lg ${config.darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-600'}`}>
+                        {config.darkMode ? <Moon size={18} /> : <Sun size={18} />}
                       </div>
                       <div>
                         <span className="block font-bold text-slate-800 dark:text-slate-200 text-sm">Modo Escuro</span>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{isDarkMode ? 'Ativado' : 'Desativado'}</span>
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{config.darkMode ? 'Ativado' : 'Desativado'}</span>
                       </div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setIsDarkMode(!isDarkMode)}
-                      className={`w-12 h-6 rounded-full transition-colors relative ${isDarkMode ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                      onClick={() => updateConfig({ darkMode: !config.darkMode })}
+                      className={`w-12 h-6 rounded-full transition-colors relative ${config.darkMode ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
                     >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isDarkMode ? 'left-7' : 'left-1'}`} />
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${config.darkMode ? 'left-7' : 'left-1'}`} />
                     </button>
                   </div>
                 </div>
