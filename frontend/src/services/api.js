@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // Helper to get from local storage
 const getStorage = (key, defaultVal) => {
@@ -113,7 +113,7 @@ export const addSessionItem = async (sessionId, ean, systemQty, physicalQty) => 
   return newItem;
 };
 
-export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty) => {
+export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty, checked) => {
   const sessions = getSessions();
   const sessionIdx = sessions.findIndex(s => s.id === sessionId);
   if (sessionIdx === -1) return null;
@@ -123,9 +123,12 @@ export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty) 
   if (idx === -1) return null;
 
   const item = session.items[idx];
-  item.physical_qty = physicalQty;
+  if (physicalQty !== undefined) item.physical_qty = physicalQty;
   if (systemQty !== undefined && systemQty !== null) {
     item.system_qty = systemQty;
+  }
+  if (checked !== undefined) {
+    item.checked = checked;
   }
   item.timestamp = Date.now(); 
 
@@ -133,6 +136,21 @@ export const updateSessionItem = async (sessionId, ean, systemQty, physicalQty) 
   sessions[sessionIdx] = session;
   setStorage('inventory_sessions', sessions);
   return item;
+};
+
+export const toggleItemCheck = async (sessionId, ean) => {
+  const sessions = getSessions();
+  const sessionIdx = sessions.findIndex(s => s.id === sessionId);
+  if (sessionIdx === -1) return null;
+
+  const session = sessions[sessionIdx];
+  const idx = session.items.findIndex(item => item.ean === ean);
+  if (idx === -1) return null;
+
+  session.items[idx].checked = !session.items[idx].checked;
+  sessions[sessionIdx] = session;
+  setStorage('inventory_sessions', sessions);
+  return session.items[idx];
 };
 
 // --- Integration ---
@@ -256,12 +274,12 @@ export const exportSessionPDF = async (sessionId) => {
     item.physical_qty.toString()
   ]);
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: 45,
     head: [['SKU/EAN', 'Nome do Produto', 'Qtd Física']],
     body: tableData,
-    headStyles: { fillStyle: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
-    alternateRowStyles: { fillStyle: [248, 250, 252] },
+    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
     margin: { top: 45 },
   });
 

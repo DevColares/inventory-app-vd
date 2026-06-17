@@ -446,7 +446,12 @@ const InventoryApp = () => {
         </span>
       </div>
 
-      <SessionTable items={sessionItems} onUpdate={handleUpdateItem} />
+      <SessionTable 
+        items={sessionItems} 
+        onUpdate={handleUpdateItem} 
+        onToggle={toggleItem}
+        session={activeSession}
+      />
       
       <ProductInfo 
         product={currentProduct} 
@@ -465,7 +470,15 @@ const InventoryApp = () => {
           <Save size={20} /> <span className="hidden sm:inline">Excel</span>
         </button>
         <button 
-          onClick={() => exportSessionPDF(activeSession.id)}
+          onClick={async () => {
+            try {
+              await exportSessionPDF(activeSession.id);
+              toast.success('PDF gerado com sucesso!');
+            } catch (error) {
+              console.error(error);
+              toast.error('Erro ao gerar PDF: ' + error.message);
+            }
+          }}
           disabled={sessionItems.length === 0}
           className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl font-bold text-slate-600 dark:text-slate-300 shadow-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-50"
           title="Exportar PDF"

@@ -6,6 +6,7 @@ import {
   getSessionItems as fetchSessionItems,
   addSessionItem as apiAddSessionItem,
   updateSessionItem as apiUpdateSessionItem,
+  toggleItemCheck as apiToggleItemCheck,
   getProduct as apiGetProduct
 } from '../services/api';
 
@@ -86,6 +87,13 @@ export const InventoryProvider = ({ children }) => {
     setSessionItems(items);
   }, [activeSession]);
 
+  const toggleItem = useCallback(async (ean) => {
+    if (!activeSession) return;
+    await apiToggleItemCheck(activeSession.id, ean);
+    const items = await fetchSessionItems(activeSession.id);
+    setSessionItems(items);
+  }, [activeSession]);
+
   const updateConfig = useCallback((newConfig) => {
     const updated = { ...config, ...newConfig };
     setConfig(updated);
@@ -113,6 +121,7 @@ export const InventoryProvider = ({ children }) => {
     deleteSession,
     addItem,
     updateItem,
+    toggleItem,
     refreshSessions
   };
 
