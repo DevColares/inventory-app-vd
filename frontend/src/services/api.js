@@ -316,3 +316,48 @@ export const sendToGoogleSheets = async (sessionId, webAppUrl) => {
     throw new Error("Falha na conexão: " + error.message);
   }
 };
+
+export const enviarConsultaSaldo = async (ean, webAppUrl) => {
+  try {
+    const payload = { action: 'adicionarConsulta', codigo: ean };
+    const response = await fetch(webAppUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    // In no-cors, we can't read the JSON response, but we assume it worked.
+    // However, we need an ID for polling. For now, the EAN itself can be the ID.
+    return ean;
+  } catch (error) {
+    throw new Error("Erro ao enviar EAN para consulta: " + error.message);
+  }
+};
+
+export const checarConsultaSaldo = async (ean, webAppUrl) => {
+  try {
+    const response = await fetch(`${webAppUrl}?action=lerConsulta&codigo=${ean}`);
+    if (!response.ok) throw new Error("Erro na rede");
+    const data = await response.json();
+    return data; // { processado: true/false, quantidade: "...", linha: 2 }
+  } catch (error) {
+    console.error("Erro ao checar saldo:", error);
+    return null;
+  }
+};
+
+export const apagarConsultaSaldo = async (linha, webAppUrl) => {
+  try {
+    const payload = { action: 'apagarConsulta', linha: linha };
+    const response = await fetch(webAppUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch (error) {
+    console.error("Erro ao apagar consulta:", error);
+    throw error;
+  }
+};

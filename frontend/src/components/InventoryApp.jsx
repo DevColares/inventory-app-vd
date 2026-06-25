@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import Scanner from './Scanner';
 import ProductInfo from './ProductInfo';
 import SessionTable from './SessionTable';
+import ConsultaSaldo from './ConsultaSaldo';
 import { useInventory } from '../services/InventoryContext';
 import { 
   getProduct, 
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'inventory', label: 'Inventário', gender: 'm', icon: ClipboardList, color: 'blue' },
   { id: 'proves', label: 'Lista de Proves', gender: 'f', icon: CheckSquare, color: 'purple' },
   { id: 'prices', label: 'Lista de Preços', gender: 'f', icon: Tag, color: 'emerald' },
+  { id: 'consulta', label: 'Consulta de Saldo', gender: 'f', icon: Search, color: 'yellow' },
 ];
 
 const InventoryApp = () => {
@@ -224,21 +226,26 @@ const InventoryApp = () => {
                 }`}
               >
                 <Icon size={20} />
-                <span className="text-[10px] uppercase tracking-wider">{tab.label}</span>
+                <span className="text-[10px] uppercase tracking-wider">{tab.label.split(' ')[0]}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="space-y-4 flex-1">
-          <button 
-            onClick={handleCreateSession}
-            className={`w-full flex items-center justify-between p-6 rounded-lg shadow-xl transition-all group ${
-              activeTab === 'inventory' ? 'bg-blue-600 shadow-blue-500/20 hover:bg-blue-700' :
-              activeTab === 'proves' ? 'bg-purple-600 shadow-purple-500/20 hover:bg-purple-700' :
-              'bg-emerald-600 shadow-emerald-500/20 hover:bg-emerald-700'
-            } text-white`}
-          >
+        {activeTab === 'consulta' ? (
+          <div className="flex-1">
+            <ConsultaSaldo />
+          </div>
+        ) : (
+          <div className="space-y-4 flex-1">
+            <button 
+              onClick={handleCreateSession}
+              className={`w-full flex items-center justify-between p-6 rounded-lg shadow-xl transition-all group ${
+                activeTab === 'inventory' ? 'bg-blue-600 shadow-blue-500/20 hover:bg-blue-700' :
+                activeTab === 'proves' ? 'bg-purple-600 shadow-purple-500/20 hover:bg-purple-700' :
+                'bg-emerald-600 shadow-emerald-500/20 hover:bg-emerald-700'
+              } text-white`}
+            >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/20 rounded-lg group-hover:scale-110 transition-transform">
                 <Plus size={24} />
@@ -283,6 +290,7 @@ const InventoryApp = () => {
             </div>
           </div>
         </div>
+        )}
 
         <footer className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-900 text-center">
           <p className="text-xs text-slate-400 font-medium">Desenvolvido por <span className="text-slate-600 dark:text-slate-300 font-bold">Andelison Colares</span></p>
